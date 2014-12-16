@@ -1,0 +1,9 @@
+{
+  "name": "foh-bai-foh",
+  "dependencies": {
+    "docker.io": "*",
+    "spdy": "*",
+    "proxy": "*"
+  },
+  "main": "ploxy.js"
+}
