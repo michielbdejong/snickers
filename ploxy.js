@@ -1,19 +1,30 @@
 var docker = require('docker.io')({host:"http://localhost", port: "4243", version:'v1.1'}),
     spdy = require('spdy'),
     crypto = require('crypto'),
-    fs = require('fs');
+    fs = require('fs'),
+    httpProxy = require('http-proxy'),
+    proxy = httpProxy.createProxyServer();
 
 var startedContainers = {};
 
 function ensureStarted(containerName, callback) {
   if (startedContainers[containerName]) {
-    callback(null);
+    callback(null, startedContainers[containerName]);
   } else {
-    docker.containers.start(function handler(err, res) {
-      if (!err) {
-        startedContainers[containerName] = true;
+    console.log('starting', containerName);
+    docker.containers.start(containerName, function handler(err, res) {
+      if (err) {
+        console.log('starting failed', containerName, err);
+        callback(err);
+      } else {
+        docker.containers.inspect(containerName, function handler(err, res) {
+          var ipaddr = res.NetworkSettings.IPAddress;
+          console.log('inspection', ipaddr);
+          startedContainers[containerName] = ipaddr;
+          console.log('started', containerName, ipaddr);
+          callback(err, ipaddr);
+        });
       }
-      callback(err, res);
     });
   }
 }
@@ -22,6 +33,7 @@ function startSpdy() {
   var options = {
     key: fs.readFileSync(__dirname + '/approved-certs/default.key'),
     cert: fs.readFileSync(__dirname + '/approved-certs/default.cert'),
+    ca: fs.readFileSync(__dirname + '/approved-certs/default.ca'),
     SNICallback: function(servername) {
       // console.log('SNIcallback', servername);
       return crypto.createCredentials({
@@ -33,8 +45,15 @@ function startSpdy() {
   };
 
   var server = spdy.createServer(options, function(req, res) {
-    ensureStarted(req.headers.host);
-    proxy.web(req.headers.host+'-backend', req, res);
+    ensureStarted(req.headers.host, function(err, ip) {
+      if (err) {
+        res.writeHead(500);
+        res.end('Could not find website on this server: ' + req.headers.host + ' - ' + JSON.stringify(err));
+       } else {
+         console.log('Proxy to http://'+ip);
+         proxy.web(req, res, { target: 'http://'+ip });
+       }
+    });
   });
 
   server.listen(443);
