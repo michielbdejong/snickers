@@ -3,7 +3,8 @@
   "dependencies": {
     "docker.io": "*",
     "spdy": "*",
-    "proxy": "*"
+    "proxy": "*",
+    "crypto": "*"
   },
   "main": "ploxy.js"
 }
