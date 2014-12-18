@@ -22,6 +22,7 @@ function inspectContainer(containerName, callback) {
   });
 }
 function ensureStarted(containerName, callback) {
+  var startTime = new Date().getTime();
   if (startedContainers[containerName]) {
     callback(null, startedContainers[containerName].ipaddr);
   } else {
@@ -32,7 +33,7 @@ function ensureStarted(containerName, callback) {
         callback(err);
       } else {
         inspectContainer(containerName, function(err, containerObj) {
-          console.log('started', containerName, containerObj);
+          console.log('started in ' + (new Date().getTime() - startTime) + 'ms', containerName, containerObj);
           startedContainers[containerName] = containerObj;
           callback(err, containerObj.ipaddr);
         });
