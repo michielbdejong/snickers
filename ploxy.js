@@ -74,7 +74,7 @@ function proxyTo(req, res, ipaddr, attempt) {
   if (!attempt) {
     attempt = 0;
   }
-  console.log('Proxy attempt ' + attempt);
+  console.log('Proxy attempt ' + attempt + ' of ' + PROXY_MAX_TRY + ' (spaced at ' + PROXY_RETRY_TIME + 'ms)');
   proxy.web(req, res, { target: 'http://' + ipaddr }, function(e) {
     if (attempt > PROXY_MAX_TRY) {
       res.writeHead(500);
