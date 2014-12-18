@@ -1,4 +1,4 @@
-var docker = require('docker.io')({host:"http://localhost", port: "4243", version:'v1.1'}),
+var docker = require('docker.io')(),
     spdy = require('spdy'),
     crypto = require('crypto'),
     fs = require('fs'),
@@ -7,6 +7,14 @@ var docker = require('docker.io')({host:"http://localhost", port: "4243", versio
 
 var startedContainers = {};
 
+function getIPAddr(containerName, callback) {
+  docker.containers.inspect(containerName, function handler(err, res) {
+    var ipaddr = res.NetworkSettings.IPAddress;
+    console.log('inspection', ipaddr);
+    startedContainers[containerName] = ipaddr;
+    callback(err, ipaddr);
+  });
+}
 function ensureStarted(containerName, callback) {
   if (startedContainers[containerName]) {
     callback(null, startedContainers[containerName]);
@@ -17,16 +25,26 @@ function ensureStarted(containerName, callback) {
         console.log('starting failed', containerName, err);
         callback(err);
       } else {
-        docker.containers.inspect(containerName, function handler(err, res) {
-          var ipaddr = res.NetworkSettings.IPAddress;
-          console.log('inspection', ipaddr);
-          startedContainers[containerName] = ipaddr;
+        getIPAddr(containerName, function(err, ipaddr) {
           console.log('started', containerName, ipaddr);
           callback(err, ipaddr);
         });
       }
     });
   }
+}
+function updateContainerList() {
+  docker.containers.list(function handler(err, res) {
+    for (var i=0; i<res.length; i++) {
+      if (Array.isArray(res[i].Names) && res[i].Names.length === 1) {
+        (function(containerName) {
+          getIPAddr(containerName, function(err, ipaddr) {
+            console.log('detected running container', containerName, ipaddr);
+          });
+        })(res[i].Names[0].substring(1));
+      }
+    }
+  });
 }
 
 function startSpdy() {
@@ -60,4 +78,5 @@ function startSpdy() {
 }
 
 //...
+updateContainerList();
 startSpdy();
