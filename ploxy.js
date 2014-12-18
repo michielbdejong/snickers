@@ -5,19 +5,24 @@ var docker = require('docker.io')(),
     httpProxy = require('http-proxy'),
     proxy = httpProxy.createProxyServer();
 
-var startedContainers = {};
+var startedContainers = {},
+    IDLE_CHECK_FREQ = 0.1*60000,
+    IDLE_LIMIT = 0.5*60000;
 
 function getIPAddr(containerName, callback) {
   docker.containers.inspect(containerName, function handler(err, res) {
     var ipaddr = res.NetworkSettings.IPAddress;
     console.log('inspection', ipaddr);
-    startedContainers[containerName] = ipaddr;
+    startedContainers[containerName] = {
+      ipaddr: ipaddr,
+      lastAccessed: new Date().getTime()
+    };
     callback(err, ipaddr);
   });
 }
 function ensureStarted(containerName, callback) {
   if (startedContainers[containerName]) {
-    callback(null, startedContainers[containerName]);
+    callback(null, startedContainers[containerName].ipaddr);
   } else {
     console.log('starting', containerName);
     docker.containers.start(containerName, function handler(err, res) {
@@ -63,13 +68,15 @@ function startSpdy() {
   };
 
   var server = spdy.createServer(options, function(req, res) {
-    ensureStarted(req.headers.host, function(err, ip) {
+    var containerName = req.headers.host + '-443';
+    ensureStarted(containerName, function(err, ip) {
       if (err) {
         res.writeHead(500);
-        res.end('Could not find website on this server: ' + req.headers.host + ' - ' + JSON.stringify(err));
+        res.end('Could not find website on this server: ' + containerName + ' - ' + JSON.stringify(err));
        } else {
-         console.log('Proxy to http://'+ip);
-         proxy.web(req, res, { target: 'http://'+ip });
+         startedContainers[containerName].lastAccessed = new Date().getTime();
+         console.log('Proxying ' + containerName + ' to http://' + ip);
+         proxy.web(req, res, { target: 'http://' + ip });
        }
     });
   });
@@ -77,6 +84,28 @@ function startSpdy() {
   server.listen(443);
 }
 
+function stopContainer(containerName) {
+  docker.containers.stop(containerName, function(err) {
+    if (err) {
+      console.log('failed to stop container', containerName, err);
+    } else {
+      delete startedContainers[containerName];
+      console.log('stopped container', containerName);
+    }
+  });
+}
+
+function checkIdle() {
+  console.log('checking for idle containers');
+  var thresholdTime = new Date().getTime() - IDLE_LIMIT;
+  for (var i in startedContainers) {
+    if (startedContainers[i].lastAccessed < thresholdTime) {
+      stopContainer(i);
+    }
+  }
+}
+
 //...
 updateContainerList();
 startSpdy();
+setInterval(checkIdle, IDLE_CHECK_FREQ);
