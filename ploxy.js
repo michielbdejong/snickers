@@ -7,17 +7,18 @@ var docker = require('docker.io')(),
 
 var startedContainers = {},
     IDLE_CHECK_FREQ = 0.1*60000,
-    IDLE_LIMIT = 0.5*60000;
+    IDLE_LIMIT = 0.1*60000,
+    PROXY_MAX_TRY = 5,
+    PROXY_RETRY_TIME = 300;
 
-function getIPAddr(containerName, callback) {
+function inspectContainer(containerName, callback) {
   docker.containers.inspect(containerName, function handler(err, res) {
     var ipaddr = res.NetworkSettings.IPAddress;
     console.log('inspection', ipaddr);
-    startedContainers[containerName] = {
+    callback(err, {
       ipaddr: ipaddr,
       lastAccessed: new Date().getTime()
-    };
-    callback(err, ipaddr);
+    });
   });
 }
 function ensureStarted(containerName, callback) {
@@ -30,24 +31,57 @@ function ensureStarted(containerName, callback) {
         console.log('starting failed', containerName, err);
         callback(err);
       } else {
-        getIPAddr(containerName, function(err, ipaddr) {
-          console.log('started', containerName, ipaddr);
-          callback(err, ipaddr);
+        inspectContainer(containerName, function(err, containerObj) {
+          console.log('started', containerName, containerObj);
+          startedContainers[containerName] = containerObj;
+          callback(err, containerObj.ipaddr);
         });
       }
     });
   }
 }
 function updateContainerList() {
+  console.log('updating container list');
+  var newList = {}, numDone = 0;
   docker.containers.list(function handler(err, res) {
+    function checkDone() {
+      if (numDone ===  res.length) {
+        startedContainers = newList;
+        console.log('new container list', startedContainers);
+      }
+    }
     for (var i=0; i<res.length; i++) {
       if (Array.isArray(res[i].Names) && res[i].Names.length === 1) {
         (function(containerName) {
-          getIPAddr(containerName, function(err, ipaddr) {
-            console.log('detected running container', containerName, ipaddr);
+          inspectContainer(containerName, function(err, containerObj) {
+            console.log('detected running container', containerName, containerObj);
+            newList[containerName] = containerObj;
+            numDone++;
+            checkDone()
           });
         })(res[i].Names[0].substring(1));
+      } else {
+        numDone++;
+        checkDone();
       }
+    }
+    checkDone();
+  });
+}
+
+function proxyTo(req, res, ipaddr, attempt) {
+  if (!attempt) {
+    attempt = 0;
+  }
+  console.log('Proxy attempt ' + attempt);
+  proxy.web(req, res, { target: 'http://' + ipaddr }, function(e) {
+    if (attempt > PROXY_MAX_TRY) {
+      res.writeHead(500);
+      res.end('Could not proxy request: ' + containerName + ' - ' + ipaddr);
+    } else {
+      setTimeout(function() {
+        proxyTo(req, res, ipaddr, attempt + 1);
+      }, PROXY_RETRY_TIME);
     }
   });
 }
@@ -69,16 +103,20 @@ function startSpdy() {
 
   var server = spdy.createServer(options, function(req, res) {
     var containerName = req.headers.host + '-443';
-    ensureStarted(containerName, function(err, ip) {
+    ensureStarted(containerName, function(err, ipaddr) {
       if (err) {
         res.writeHead(500);
         res.end('Could not find website on this server: ' + containerName + ' - ' + JSON.stringify(err));
-       } else {
-         startedContainers[containerName].lastAccessed = new Date().getTime();
-         console.log('Proxying ' + containerName + ' to http://' + ip);
-         proxy.web(req, res, { target: 'http://' + ip });
-       }
+      } else {
+        startedContainers[containerName].lastAccessed = new Date().getTime();
+        console.log('Proxying ' + containerName + ' to http://' + ipaddr);
+        proxyTo(req, res, ipaddr);
+      }
     });
+  });
+
+  proxy.on('error', function(e) {
+    console.log('proxy error', e);
   });
 
   server.listen(443);
@@ -88,6 +126,7 @@ function stopContainer(containerName) {
   docker.containers.stop(containerName, function(err) {
     if (err) {
       console.log('failed to stop container', containerName, err);
+      updateContainerList();
     } else {
       delete startedContainers[containerName];
       console.log('stopped container', containerName);
