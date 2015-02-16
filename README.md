@@ -15,26 +15,26 @@ To try it out:
 Then create a backend, by either:
 
 ````
-sudo docker create -d --name test.com -p 80:80 indiehosters/nginx
+sudo docker create -d --name test.com indiehosters/nginx
 ````
 
 or:
 
 
 ````
-sudo docker run -d --name test.com -p 80:80 indiehosters/nginx
+sudo docker run -d --name test.com indiehosters/nginx
 sudo docker stop test.com
 ````
 
 Now run the ploxy:
 
 ````
-npm install
-sudo node ploxy.js
+sudo docker build -t ploxy . #WARNING: this will build your TLS certs into the image, including the private keys
+sudo docker run -d --net=host ploxy
 ````
 
 And visit https://test.com/ with your browser. You will see that the proxy:
 
 * Exposes a SPDY server
 * Switches certs based on domain name, using SNI
-* start the stopped Docker container on-the-fly proxies the request to its Docker IP address
+* starts the stopped Docker container on-the-fly and proxies the request to its Docker IP address
