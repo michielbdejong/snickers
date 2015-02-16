@@ -26,14 +26,9 @@ sudo docker run -d --name test.com indiehosters/nginx
 sudo docker stop test.com
 ````
 
-Now run the ploxy:
+Now install nodejs 0.10 on the host, and run the ploxy with `npm install; node ploxy`,
 
-````
-sudo docker build -t ploxy . #WARNING: this will build your TLS certs into the image, including the private keys
-sudo docker run -d --net=host ploxy
-````
-
-And visit https://test.com/ with your browser. You will see that the proxy:
+Visit https://test.com/ with your browser. You will see that the proxy:
 
 * Exposes a SPDY server
 * Switches certs based on domain name, using SNI

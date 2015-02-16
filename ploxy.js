@@ -1,3 +1,4 @@
+console.log('hi');
 var docker = require('docker.io')(),
     spdy = require('spdy'),
     crypto = require('crypto'),
@@ -45,6 +46,7 @@ function updateContainerList() {
   console.log('updating container list');
   var newList = {}, numDone = 0;
   docker.containers.list(function handler(err, res) {
+    console.log('container list', err, res);
     function checkDone() {
       if (numDone ===  res.length) {
         startedContainers = newList;
@@ -88,17 +90,28 @@ function proxyTo(req, res, ipaddr, attempt) {
 }
 
 function startSpdy() {
-  var options = {
+  var defaultCert = {
     key: fs.readFileSync(__dirname + '/approved-certs/default.key'),
     cert: fs.readFileSync(__dirname + '/approved-certs/default.cert'),
-    ca: fs.readFileSync(__dirname + '/approved-certs/default.ca'),
+    ca: fs.readFileSync(__dirname + '/approved-certs/default.ca')
+  };
+  var options = {
+    key: defaultCert.key,
+    cert: defaultCert.cert,
+    ca: defaultCert.ca,
     SNICallback: function(servername) {
-      // console.log('SNIcallback', servername);
-      return crypto.createCredentials({
-        key: fs.readFileSync(__dirname + '/approved-certs/' + servername + '.key'),
-        cert: fs.readFileSync(__dirname + '/approved-certs/' + servername + '.cert'),
-        ca: fs.readFileSync(__dirname + '/approved-certs/' + servername + '.ca')
-      }).context;
+      var cert;
+      try {
+        cert = {
+          key: fs.readFileSync(__dirname + '/approved-certs/' + servername + '.key'),
+          cert: fs.readFileSync(__dirname + '/approved-certs/' + servername + '.cert'),
+          ca: fs.readFileSync(__dirname + '/approved-certs/' + servername + '.ca')
+        };
+      } catch (e) {
+        console.log('SNIcallback but no cert', servername);
+        cert = defaultCert;
+      }
+      return crypto.createCredentials(cert).context;
     }
   };
 
