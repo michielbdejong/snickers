@@ -77,10 +77,11 @@ function proxyTo(req, res, ipaddr, attempt) {
     attempt = 0;
   }
   console.log('Proxy attempt ' + attempt + ' of ' + PROXY_MAX_TRY + ' (spaced at ' + PROXY_RETRY_TIME + 'ms)');
+  console.log('request headers going to backend', req.headers);
   proxy.web(req, res, { target: 'http://' + ipaddr }, function(e) {
     if (attempt > PROXY_MAX_TRY) {
       res.writeHead(500);
-      res.end('Could not proxy request: ' + containerName + ' - ' + ipaddr);
+      res.end('Could not proxy request: ' + req.headers.host + '-443');
     } else {
       setTimeout(function() {
         proxyTo(req, res, ipaddr, attempt + 1);

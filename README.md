@@ -15,14 +15,14 @@ To try it out:
 Then create a backend, by either:
 
 ````
-sudo docker create -d --name test.com indiehosters/nginx
+sudo docker create -d --name test.com-443 indiehosters/nginx
 ````
 
 or:
 
 
 ````
-sudo docker run -d --name test.com indiehosters/nginx
+sudo docker run -d --name test.com-443 indiehosters/nginx
 sudo docker stop test.com
 ````
 
