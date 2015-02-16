@@ -1,7 +1,7 @@
 {
   "name": "foh-bai-foh",
   "dependencies": {
-    "docker.io": "*",
+    "dockerode": "*",
     "spdy": "*",
     "http-proxy": "*",
     "crypto": "*"

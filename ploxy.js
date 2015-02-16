@@ -1,4 +1,5 @@
-var docker = require('docker.io')(),
+var Docker = require('dockerode'),
+    docker = new Docker(),
     spdy = require('spdy'),
     crypto = require('crypto'),
     fs = require('fs'),
@@ -13,7 +14,7 @@ var startedContainers = {},
     PROXY_RETRY_TIME = 300;
 
 function inspectContainer(containerName, callback) {
-  docker.containers.inspect(containerName, function handler(err, res) {
+  docker.getContainer(containerName).inspect(function handler(err, res) {
     var ipaddr = res.NetworkSettings.IPAddress;
     console.log('inspection', ipaddr);
     callback(err, {
@@ -28,7 +29,7 @@ function ensureStarted(containerName, callback) {
     callback(null, startedContainers[containerName].ipaddr);
   } else {
     console.log('starting', containerName);
-    docker.containers.start(containerName, function handler(err, res) {
+   docker.getContainer(containerName).start(function handler(err, res) {
       if (err) {
         console.log('starting failed', containerName, err);
         callback(err);
@@ -45,7 +46,7 @@ function ensureStarted(containerName, callback) {
 function updateContainerList() {
   console.log('updating container list');
   var newList = {}, numDone = 0;
-  docker.containers.list(function handler(err, res) {
+  docker.listContainers(function handler(err, res) {
     console.log('container list', err, res);
     function checkDone() {
       if (numDone ===  res.length) {
@@ -76,8 +77,7 @@ function proxyTo(req, res, ipaddr, attempt) {
   if (!attempt) {
     attempt = 0;
   }
-  console.log('Proxy attempt ' + attempt + ' of ' + PROXY_MAX_TRY + ' (spaced at ' + PROXY_RETRY_TIME + 'ms)');
-  console.log('request headers going to backend', req.headers);
+  console.log('Proxy attempt ' + attempt + ' of ' + PROXY_MAX_TRY + ' (spaced at ' + PROXY_RETRY_TIME + 'ms)', ipaddr);
   proxy.web(req, res, { target: 'http://' + ipaddr }, function(e) {
     if (attempt > PROXY_MAX_TRY) {
       res.writeHead(500);
@@ -138,7 +138,7 @@ function startSpdy() {
 }
 
 function stopContainer(containerName) {
-  docker.containers.stop(containerName, function(err) {
+  docker.getContainer(containerName).stop(function(err) {
     if (err) {
       console.log('failed to stop container', containerName, err);
       updateContainerList();
