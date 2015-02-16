@@ -1,4 +1,4 @@
-# Ploxy
+# Proxy
 
 To try it out:
 
@@ -26,7 +26,7 @@ sudo docker run -d --name test.com-443 indiehosters/nginx
 sudo docker stop test.com
 ````
 
-Now install nodejs 0.10 on the host, and run the ploxy with `npm install; node ploxy`,
+Now install nodejs 0.10 on the host, and run the proxy with `npm install; node proxy`,
 
 Visit https://test.com/ with your browser. You will see that the proxy:
 
