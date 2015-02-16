@@ -1,10 +1,10 @@
-console.log('hi');
 var docker = require('docker.io')(),
     spdy = require('spdy'),
     crypto = require('crypto'),
     fs = require('fs'),
     httpProxy = require('http-proxy'),
-    proxy = httpProxy.createProxyServer();
+    proxy = httpProxy.createProxyServer(),
+    http = require('http');
 
 var startedContainers = {},
     IDLE_CHECK_FREQ = 0.1*60000,
@@ -162,3 +162,9 @@ function checkIdle() {
 updateContainerList();
 startSpdy();
 setInterval(checkIdle, IDLE_CHECK_FREQ);
+http.createServer(function(req, res) {
+  res.writeHead(302, {
+    Location: 'https://' + req.headers.host + req.url
+  });
+  res.end('Location: https://' + req.headers.host + req.url);
+}).listen(80);
