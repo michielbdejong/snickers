@@ -3,7 +3,7 @@ var Docker = require('dockerode'),
 
 var startedContainers = {},
     IDLE_CHECK_FREQ = 0.1*60000,
-    IDLE_LIMIT = 10*60000;
+    IDLE_LIMIT = 0.1*60000;
 
 function inspectContainer(containerName, callback) {
   docker.getContainer(containerName).inspect(function handler(err, res) {
@@ -68,14 +68,18 @@ function updateContainerList() {
 }
 
 function stopContainer(containerName) {
-  docker.getContainer(containerName).stop(function(err) {
-    if (err) {
-      console.log('failed to stop container', containerName, err);
-      updateContainerList();
-    } else {
-      delete startedContainers[containerName];
-      console.log('stopped container', containerName);
-    }
+  var container = docker.getContainer(containerName);
+  container.exec({ Cmd: 'sh /backup.sh' }, function(err) {
+    console.log('result of sh /backup.sh', err);
+    container.stop(function(err) {
+      if (err) {
+        console.log('failed to stop container', containerName, err);
+        updateContainerList();
+      } else {
+        delete startedContainers[containerName];
+        console.log('stopped container', containerName);
+      }
+    });
   });
 }
 
