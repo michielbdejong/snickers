@@ -1,10 +1,10 @@
 {
-  "name": "foh-bai-foh",
+  "name": "snickers",
   "dependencies": {
     "dockerode": "*",
     "spdy": "*",
     "http-proxy": "*",
     "crypto": "*"
   },
-  "main": "ploxy.js"
+  "main": "snickers.js"
 }

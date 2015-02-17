@@ -1,4 +1,4 @@
-# Proxy
+# Snickers
 
 To try it out:
 
@@ -26,10 +26,10 @@ sudo docker run -d --name test.com-443 indiehosters/nginx
 sudo docker stop test.com
 ````
 
-Now install nodejs 0.10 on the host, and run the proxy with `npm install; node proxy`,
+Now install nodejs on the host, and start the SNI offloader with `npm install; node snickers`,
 
-Visit https://test.com/ with your browser. You will see that the proxy:
+Visit https://test.com/ with your browser. You will see that Snickers will:
 
-* Exposes a SPDY server
-* Switches certs based on domain name, using SNI
-* starts the stopped Docker container on-the-fly and proxies the request to its Docker IP address
+* Expose a SPDY server
+* Switch certs based on domain name, using SNI
+* Start the stopped Docker container on-the-fly and proxy the request to its Docker IP address
