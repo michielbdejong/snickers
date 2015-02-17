@@ -9,8 +9,8 @@ var Docker = require('dockerode'),
 
 var startedContainers = {},
     IDLE_CHECK_FREQ = 0.1*60000,
-    IDLE_LIMIT = 0.1*60000,
-    PROXY_MAX_TRY = 5,
+    IDLE_LIMIT = 10*60000,
+    PROXY_MAX_TRY = 500,
     PROXY_RETRY_TIME = 300;
 
 function inspectContainer(containerName, callback) {
@@ -84,7 +84,27 @@ function proxyTo(req, res, ipaddr, attempt) {
       res.end('Could not proxy request: ' + req.headers.host + '-443');
     } else {
       setTimeout(function() {
+        if (attempt % 10 === 0) {
+          updateContainerList();
+        }
         proxyTo(req, res, ipaddr, attempt + 1);
+      }, PROXY_RETRY_TIME);
+    }
+  });
+}
+
+function proxyWsTo(req, socket, head, ipaddr, attempt) {
+  if (!attempt) {
+    attempt = 0;
+  }
+  console.log('Proxy ws attempt ' + attempt + ' of ' + PROXY_MAX_TRY + ' (spaced at ' + PROXY_RETRY_TIME + 'ms)', ipaddr);
+  proxy.ws(req, socket, head, { target: 'http://' + ipaddr }, function(e) {
+    if (attempt > PROXY_MAX_TRY) {
+      res.writeHead(500);
+      res.end('Could not proxy ws request: ' + req.headers.host + '-443');
+    } else {
+      setTimeout(function() {
+        proxyWsTo(req, socket, head, ipaddr, attempt + 1);
       }, PROXY_RETRY_TIME);
     }
   });
@@ -126,6 +146,21 @@ function startSpdy() {
         startedContainers[containerName].lastAccessed = new Date().getTime();
         console.log('Proxying ' + containerName + ' to http://' + ipaddr);
         proxyTo(req, res, ipaddr);
+      }
+    });
+  });
+
+  //special case for dealing with websockets:
+  server.on('upgrade', function (req, socket, head) {
+    var containerName = req.headers.host + '-443';
+    ensureStarted(containerName, function(err, ipaddr) {
+      if (err) {
+        res.writeHead(500);
+        res.end('Could not find website on this server: ' + containerName + ' - ' + JSON.stringify(err));
+      } else {
+        startedContainers[containerName].lastAccessed = new Date().getTime();
+        console.log('Proxying ' + containerName + ' to http://' + ipaddr);
+        proxyWsTo(req, socket, head, ipaddr);
       }
     });
   });
