@@ -15,9 +15,6 @@ function proxyTo(req, res, ipaddr, attempt) {
       res.end('Could not proxy request: ' + req.headers.host + '-443');
     } else {
       setTimeout(function() {
-        if (attempt % 10 === 0) {
-          updateContainerList();
-        }
         proxyTo(req, res, ipaddr, attempt + 1);
       }, PROXY_RETRY_TIME);
     }

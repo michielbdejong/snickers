@@ -2,8 +2,10 @@ var Docker = require('dockerode'),
     docker = new Docker();
 
 var startedContainers = {},
+    stoppingContainerWaiters = {},
     IDLE_CHECK_FREQ = 0.1*60000,
-    IDLE_LIMIT = 0.1*60000;
+    IDLE_LIMIT = 0.1*60000,
+    BACKUP_FREQ = 0.15*60000;
 
 function inspectContainer(containerName, callback) {
   docker.getContainer(containerName).inspect(function handler(err, res) {
@@ -17,12 +19,14 @@ function inspectContainer(containerName, callback) {
 }
 function ensureStarted(containerName, callback) {
   var startTime = new Date().getTime();
-  if (startedContainers[containerName]) {
+  if (stoppingContainerWaiters[containerName]) {
+    stoppingContainerWaiters[containerName].push(callback);
+  } else if (startedContainers[containerName]) {
     startedContainers[containerName].lastAccessed = new Date().getTime();
     callback(null, startedContainers[containerName].ipaddr);
   } else {
     console.log('starting', containerName);
-   docker.getContainer(containerName).start(function handler(err, res) {
+    docker.getContainer(containerName).start(function handler(err, res) {
       if (err) {
         console.log('starting failed', containerName, err);
         callback(err);
@@ -37,7 +41,7 @@ function ensureStarted(containerName, callback) {
     });
   }
 }
-function updateContainerList() {
+function updateContainerList(callback) {
   console.log('updating container list');
   var newList = {}, numDone = 0;
   docker.listContainers(function handler(err, res) {
@@ -46,6 +50,9 @@ function updateContainerList() {
       if (numDone ===  res.length) {
         startedContainers = newList;
         console.log('new container list', startedContainers);
+        if (callback) {
+          callback();
+        }
       }
     }
     for (var i=0; i<res.length; i++) {
@@ -67,34 +74,69 @@ function updateContainerList() {
   });
 }
 
-function stopContainer(containerName) {
-  var container = docker.getContainer(containerName);
-  container.exec({ Cmd: 'sh /backup.sh' }, function(err) {
+function backupContainer(containerName, callback) {
+  docker.getContainer(containerName).exec({ Cmd: 'sh /backup.sh' }, function(err) {
     console.log('result of sh /backup.sh', err);
-    container.stop(function(err) {
-      if (err) {
-        console.log('failed to stop container', containerName, err);
-        updateContainerList();
-      } else {
-        delete startedContainers[containerName];
-        console.log('stopped container', containerName);
-      }
-    });
+    if (callback) {
+      callback(err);
+    }
+  });
+}
+
+function stopContainer(containerName) {
+  if (stoppingContainerWaiters[containerName]) {
+    return;
+  } else {
+    stoppingContainerWaiters[containerName] = [];
+  }
+
+  backupContainer(containerName, function(err) {
+    if (err) {
+      console.log('backup failed, not stopping this container now');
+      delete stoppingContainerWaiters[containerName];
+    } else {
+      docker.getContainer(containerName).stop(function(err) {
+        var waiters = stoppingContainerWaiters[containerName];
+        delete stoppingContainerWaiters[containerName];
+        if (err) {
+          console.log('failed to stop container', containerName, err);
+          updateContainerList();
+        } else {
+          delete startedContainers[containerName];
+          console.log('stopped container', containerName);
+        }
+        if (waiters.length) {
+          ensureStarted(containerName, function(err) {
+            for (var i=0; i<waiters.length; i++) {
+              waiters[i](err);
+            }
+          });
+        }
+      });
+    }
   });
 }
 
 function checkIdle() {
-  //console.log('checking for idle containers');
-  var thresholdTime = new Date().getTime() - IDLE_LIMIT;
-  for (var i in startedContainers) {
-    if (startedContainers[i].lastAccessed < thresholdTime) {
-      stopContainer(i);
+  updateContainerList(function() {
+    var thresholdTime = new Date().getTime() - IDLE_LIMIT;
+    for (var i in startedContainers) {
+      if (startedContainers[i].lastAccessed < thresholdTime) {
+        stopContainer(i);
+      }
     }
-  }
+  });
 }
 
 //...
 updateContainerList();
 setInterval(checkIdle, IDLE_CHECK_FREQ);
+setInterval(function() {
+  updateContainerList(function() {
+    for (var containerName in startedContainers) {
+      backupContainer(containerName);
+    }
+  });
+}, BACKUP_FREQ);
 
 module.exports.ensureStarted = ensureStarted;
