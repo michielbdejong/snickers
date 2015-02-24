@@ -2,7 +2,14 @@
 var config = {
   domains: {
     'example.com': {
-      application: 'known', //see 'backends/' folder
+      type: 'backend', //see 'backends/' folder in this repo
+      application: 'known',
+      otherEmail: 'user@gmail.com'
+    },
+    'example2.com': {
+      type: 'static-pull',
+      repo: 'https://github.com/michielbdejong/website',
+      folder: 'public/',
       otherEmail: 'user@gmail.com'
     }
   },

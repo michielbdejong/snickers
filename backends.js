@@ -17,7 +17,8 @@ function inspectContainer(containerName, callback) {
     });
   });
 }
-function ensureStarted(containerName, callback) {
+function ensureStarted(hostname, image, callback) {
+  var containerName = hostname + '-443';
   var startTime = new Date().getTime();
   if (stoppingContainerWaiters[containerName]) {
     stoppingContainerWaiters[containerName].push(callback);
