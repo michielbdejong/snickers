@@ -11,7 +11,7 @@ listener.startSpdy(function(req, res) { // handlerWeb:
     backends.ensureStarted(req.headers.host, config.image, function(err, ipaddr) {
       if (err) {
         res.writeHead(500);
-        res.end('Error starting site on this server: ' + containerName + ' - ' + JSON.stringify(err));
+        res.end('Error starting ' + config.image + ' for ' + req.headers.host + ' - ' + JSON.stringify(err));
       } else {
         console.log('Proxying ' + containerName + ' to http://' + ipaddr);
         dispatcher.proxyTo(req, res, ipaddr, config.port);
