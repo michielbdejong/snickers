@@ -1,2 +1,3 @@
 node_modules
-approved-certs
+config.js
+config.json

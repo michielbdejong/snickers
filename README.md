@@ -40,18 +40,19 @@ This means migrations are as easy as switching the DNS and hitting the domain on
 
 ### WARNING: not all of this is implemented yet, so this will not yet currently work like this.
 
-Snickers requires Docker, nodejs, and the packages it install when you run `npm install` in the root of this repo. I use screen to
+Snickers requires Docker, nodejs, and the packages it installs when you run `npm install` in the root of this repo. I use screen to
 run `node ./snickers` in a loop (configure the server to restart this screen on startup, in case it reboots).
 
 The only configuration you need to give snickers is the location of its two backup servers. It will store data locally in `/data`, by default.
 
-Copy `config.sample.js` to `config.js` and put in the two git servers to use for backups. Make sure these are private git servers, but
+Copy `config.js.sample` to `config.js` and put in the two git servers to use for backups. Make sure these are private git servers, but
 that the user as which you run snickers does have access to them.
 
-To add a domain, you can use `node ./add` which will interactively ask you for the necessary info. Note that it's not necessary to
-restart snickers for this. You don't even need to do it on the same server as where the domain will run, as long as they share the
-same two backup servers.
+Now run `node config.js` to generate `config.json`, which Snicker will load in once every minute.
+
+To add a domain, it's not necessary to restart snickers. Just add it in config.js, run `node config`, and within the next 60 seconds,
+snickers will have picked it up and started the deploy.
 
 By default, a LetsEncrypt cert will be used. To install a different TLS certificate (for instance from StartSSL),
-concatenate the public cert, intermediate cert, and private key, into
-`/data/domains/<example.com>/TLS/<example.com>.pem`.
+concatenate the public cert into `/etc/letsencrypt/<example.com>/cert.pem` and the private key into
+`/etc/letsencrypt/<example.com>/key.pem` (I will add support for chain certs soon).

@@ -1,0 +1,14 @@
+//Simple tool to write config.json:
+var config = {
+  domains: {
+    'example.com': {
+      application: 'known', //see 'backends/' folder
+      otherEmail: 'user@gmail.com'
+    }
+  },
+  backupServers: {
+    origin: 'git@backmeup.com',
+    secondary: 'ssh://me@atlanta.biz:422/home/me'
+  }
+};
+require('fs').writeFile('config.json', JSON.stringify(config));
