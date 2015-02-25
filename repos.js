@@ -1,8 +1,30 @@
 var Repo = require('git-tools'),
     mkdirp = require('mkdirp'),
+    alarm = require('./alarm'),
     configReader = require('./config-reader');
 
-var CHECKOUTS_ROOT = '/data/domains/';
+var CHECKOUTS_ROOT = '/data/domains/',
+    DEFAULT_PULL_INTERVAL = 60 * 60 * 1000;
+
+var lastPull = {};
+
+module.exports.maybePull = function(domain, interval) {
+  var now = new Date().getTime();
+  if (!interval) {
+    interval = DEFAULT_PULL_INTERVAL;
+  }
+  if (lastPull[domain] && (now - lastPull[domain] < interval)) {
+    return;
+  }
+  var repo = new Repo(CHECKOUTS_ROOT + domain);
+  repo.exec('pull', function(err, data) {
+    if (err) {
+      alarm.raise('git pull failed', domain);
+    } else {
+      lastPull[domain] = now;
+    }
+  });
+}
 
 module.exports.ensurePresent = function(domain, remotePath, callback) {
   var localPath = CHECKOUTS_ROOT + domain;

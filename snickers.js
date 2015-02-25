@@ -28,6 +28,7 @@ listener.startSpdy(function(req, res) { // handlerWeb:
         res.end('Snickers says: Error fetching statics repo for ' + req.headers.host + ' - see stdout logs for details');
       } else {
         statics.serveStatic(localRepoPath + (config.folder ? '/' + config.folder : ''), req, res);
+        repos.maybePull(req.headers.host, config.pullFrequency);
       }
     });
   } else {
