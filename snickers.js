@@ -2,7 +2,9 @@ var backends = require('./backends'),
     dispatcher = require('./dispatcher'),
     listener = require('./listener'),
     http = require('http'),
-    configReader = require('./config-reader');
+    configReader = require('./config-reader'),
+    statics = require('./statics'),
+    repos = require('./repos');
 
 //...
 listener.startSpdy(function(req, res) { // handlerWeb:
@@ -18,7 +20,15 @@ listener.startSpdy(function(req, res) { // handlerWeb:
       }
     });
   } else if (config.type === 'static') {
-    handleStatic(req, res);
+    repos.ensurePresent(req.headers.host, config.repo, function(err, localRepoPath) {
+      if (err) {
+        res.writeHead(500);
+        console.log('Error fetching statics repo for ' + req.headers.host + ' - ' + JSON.stringify(err));
+        res.end('Snickers says: Error fetching statics repo for ' + req.headers.host + ' - see stdout logs for details');
+      } else {
+        statics.handleStatic(localRepoPath + (config.path ? config.path : ''), req, res);
+      }
+    });
   } else {
     res.writeHead(404);
     res.end('Snickers says: That site is not configured on this server.');

@@ -4,7 +4,9 @@
     "dockerode": "*",
     "spdy": "*",
     "http-proxy": "*",
-    "crypto": "*"
+    "crypto": "*",
+    "node-static": "*",
+    "git-tools": "*"
   },
   "main": "snickers.js"
 }

@@ -31,3 +31,10 @@ function getConfig(domain) {
 setInterval(loadConfig, CONFIG_LOAD_FREQ);
 loadConfig();
 module.exports.getConfig = getConfig;
+module.exports.getBackupServer = function(which) {
+  if (config && config.backupServers) {
+    return config.backupServers[which];
+  } else {
+    return null;
+  }
+}
