@@ -9,6 +9,7 @@ var backends = require('./backends'),
 //...
 listener.startSpdy(function(req, res) { // handlerWeb:
   var config = configReader.getConfig(req.headers.host);
+  console.log(req.headers.host, config);
   if (config.type === 'backend') {
     backends.ensureStarted(req.headers.host, config.image, function(err, ipaddr) {
       if (err) {
@@ -26,7 +27,7 @@ listener.startSpdy(function(req, res) { // handlerWeb:
         console.log('Error fetching statics repo for ' + req.headers.host + ' - ' + JSON.stringify(err));
         res.end('Snickers says: Error fetching statics repo for ' + req.headers.host + ' - see stdout logs for details');
       } else {
-        statics.handleStatic(localRepoPath + (config.path ? config.path : ''), req, res);
+        statics.serveStatic(localRepoPath + (config.folder ? '/' + config.folder : ''), req, res);
       }
     });
   } else {
