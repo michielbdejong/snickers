@@ -42,12 +42,22 @@ function getHttpsOptionsFromDisk(domain, callback) {
       callback(err1);
     } else {
       fs.readFile(certificatesFolder + domain + '/key.pem', function(err2, keyData) {
-        if (err1) {
-          callback(err1);
+        if (err2) {
+          callback(err2);
         } else {
-          callback(null, {
-            key: keyData,
-            cert: certData
+          fs.readFile(certificatesFolder + domain + '/ca.pem', function(err3, caData) {
+            if (err3) {
+              callback(null, {
+                key: keyData,
+                cert: certData
+              });
+            } else {
+              callback(null, {
+                key: keyData,
+                cert: certData,
+                ca: caData
+              });
+            }
           });
         }
       });
