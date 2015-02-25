@@ -6,7 +6,7 @@ module.exports.raise = function(str) {
     if (err) {
       console.log('CANNOT RAISE ALARM', str);
     }
-    fs.createFile('/data/alarm/'+(new Date().getTime()), str, function(err2) {
+    fs.writeFile('/data/alarm/'+(new Date().getTime()), str, function(err2) {
       if (err2) {
         console.log('CANNOT RAISE ALARM', str);
       }
