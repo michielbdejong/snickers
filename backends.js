@@ -10,7 +10,7 @@ var startedContainers = {},
 function inspectContainer(containerName, callback) {
   docker.getContainer(containerName).inspect(function handler(err, res) {
     var ipaddr = res.NetworkSettings.IPAddress;
-    console.log('inspection', ipaddr);
+    //console.log('inspection', ipaddr);
     callback(err, {
       ipaddr: ipaddr,
       lastAccessed: new Date().getTime()
@@ -43,14 +43,14 @@ function ensureStarted(hostname, image, callback) {
   }
 }
 function updateContainerList(callback) {
-  console.log('updating container list');
+  //console.log('updating container list');
   var newList = {}, numDone = 0;
   docker.listContainers(function handler(err, res) {
-    console.log('container list', err, res);
+    //console.log('container list', err, res);
     function checkDone() {
       if (numDone ===  res.length) {
         startedContainers = newList;
-        console.log('new container list', startedContainers);
+        //console.log('new container list', startedContainers);
         if (callback) {
           callback();
         }
@@ -60,7 +60,7 @@ function updateContainerList(callback) {
       if (Array.isArray(res[i].Names) && res[i].Names.length === 1) {
         (function(containerName) {
           inspectContainer(containerName, function(err, containerObj) {
-            console.log('detected running container', containerName, containerObj);
+            //console.log('detected running container', containerName, containerObj);
             newList[containerName] = containerObj;
             numDone++;
             checkDone()
