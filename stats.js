@@ -18,7 +18,7 @@ setInterval(function() {
     if (err) {
       alarm.raise('error writing stats '+JSON.stringify(err));
     } else {
-      fs.writeFile(SAVE_ROOT + (new Date().getTime()), JSON.stringify(stat), function(err) {
+      fs.writeFile(SAVE_ROOT + (new Date().getTime()), JSON.stringify(stats), function(err) {
         if (err) {
           alarm.raise('error writing stats '+JSON.stringify(err));
         } else {
