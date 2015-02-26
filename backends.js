@@ -50,6 +50,7 @@ function inspectContainer(containerName, callback) {
   });
 }
 function ensureStarted(hostname, image, localDataPath, callback) {
+  console.log('ensureStarted', hostname, image, localDataPath, callback);
   var containerName = hostname + '-' + image;
   var startTime = new Date().getTime();
   if (stoppingContainerWaiters[containerName]) {
