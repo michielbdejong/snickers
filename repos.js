@@ -40,8 +40,9 @@ module.exports.ensurePresent = function(domain, remotePath, callback) {
           calback('Cannot clone repo! No remotePath specified, and no origin backup server in config');
           return;
         }
-        remotePath = backupServer + domain;
+        remotePath = backupServer + ':' + domain;
       }
+      console.log('cloning', remotePath, localPath);
       Repo.clone({
         repo: remotePath,
         dir: localPath

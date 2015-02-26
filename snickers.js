@@ -22,7 +22,7 @@ listener.startSpdy(function(req, res) { // handlerWeb:
             res.writeHead(500);
             res.end('Error starting ' + config.image + ' for ' + req.headers.host + ' - ' + JSON.stringify(err));
           } else {
-            console.log('Proxying ' + containerName + ' to http://' + ipaddr);
+            console.log('Proxying ' + req.headers.host + ' to http://' + ipaddr);
             dispatcher.proxyTo(req, res, ipaddr, config.port);
           }
         });
