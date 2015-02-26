@@ -6,7 +6,8 @@
     "http-proxy": "*",
     "crypto": "*",
     "node-static": "*",
-    "git-tools": "*"
+    "git-tools": "*",
+    "native-dns": "*"
   },
   "main": "snickers.js"
 }
