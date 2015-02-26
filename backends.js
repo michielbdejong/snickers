@@ -24,7 +24,7 @@ function createContainer(domain, image, localDataPath, callback) {
   });
 }
 function smartStartContainer(domain, image, localDataPath, callback) {
-  docker.getContainer(domain + '-' + image).start(function handler(err, res) {
+  docker.getContainer(domain + '-' + image).start(function(err, res) {
     if (err && err.statusCode === 404) {
       createContainer(domain, image, function(err, container) {
         if (err) {
@@ -128,7 +128,8 @@ function stopContainer(containerName) {
       console.log('backup failed, not stopping this container now');
       delete stoppingContainerWaiters[containerName];
     } else {
-      docker.getContainer(containerName).stop(function(err) {
+      var container = docker.getContainer(containerName);
+      container.stop(function(err) {
         var waiters = stoppingContainerWaiters[containerName];
         delete stoppingContainerWaiters[containerName];
         if (err) {
@@ -139,7 +140,7 @@ function stopContainer(containerName) {
           console.log('stopped container', containerName);
         }
         if (waiters.length) {
-          ensureStarted(containerName, function(err) {
+          container.start(function(err, res) {
             for (var i=0; i<waiters.length; i++) {
               waiters[i](err);
             }

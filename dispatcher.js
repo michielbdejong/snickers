@@ -12,7 +12,7 @@ function proxyTo(req, res, ipaddr, attempt) {
   proxy.web(req, res, { target: 'http://' + ipaddr }, function(e) {
     if (attempt > PROXY_MAX_TRY) {
       res.writeHead(500);
-      res.end('Could not proxy request: ' + req.headers.host + '-443');
+      res.end('Could not proxy request: ' + req.headers.host);
     } else {
       setTimeout(function() {
         proxyTo(req, res, ipaddr, attempt + 1);
