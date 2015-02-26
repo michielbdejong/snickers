@@ -11,13 +11,21 @@ listener.startSpdy(function(req, res) { // handlerWeb:
   var config = configReader.getConfig(req.headers.host);
   console.log(req.headers.host, config);
   if (config.type === 'backend') {
-    backends.ensureStarted(req.headers.host, config.image, function(err, ipaddr) {
+    repos.ensurePresent(req.headers.host, config.repo, function(err, localRepoPath) {
       if (err) {
         res.writeHead(500);
-        res.end('Error starting ' + config.image + ' for ' + req.headers.host + ' - ' + JSON.stringify(err));
+        console.log('Error fetching statics repo for ' + req.headers.host + ' - ' + JSON.stringify(err));
+        res.end('Snickers says: Error fetching statics repo for ' + req.headers.host + ' - see stdout logs for details');
       } else {
-        console.log('Proxying ' + containerName + ' to http://' + ipaddr);
-        dispatcher.proxyTo(req, res, ipaddr, config.port);
+        backends.ensureStarted(req.headers.host, config.image, localRepoPath, function(err, ipaddr) {
+          if (err) {
+            res.writeHead(500);
+            res.end('Error starting ' + config.image + ' for ' + req.headers.host + ' - ' + JSON.stringify(err));
+          } else {
+            console.log('Proxying ' + containerName + ' to http://' + ipaddr);
+            dispatcher.proxyTo(req, res, ipaddr, config.port);
+          }
+        });
       }
     });
   } else if (config.type === 'static') {

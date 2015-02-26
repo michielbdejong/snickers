@@ -7,6 +7,38 @@ var startedContainers = {},
     IDLE_LIMIT = 0.1*60000,
     BACKUP_FREQ = 0.15*60000;
 
+function createContainer(domain, image, localDataPath, callback) {
+  docker.buildImage('./backends/tar/' + image + '.tar', {t: image}, function(err, stream) {
+    console.log('build err', err);
+    stream.pipe(process.stdout);
+    stream.on('end', function() {
+      console.log('build done, creating container now');
+      var volumes = {};
+      volumes[localDataPath+'/'+image] = '/data';
+      docker.createContainer({
+        Image: image,
+        Binds: volumes,
+        name: domain + '-' + image
+      }, callback);
+    });
+  });
+}
+function smartStartContainer(domain, image, localDataPath, callback) {
+  docker.getContainer(domain + '-' + image).start(function handler(err, res) {
+    if (err && err.statusCode === 404) {
+      createContainer(domain, image, function(err, container) {
+        if (err) {
+          callback(err);
+        } else{
+          container.start(callback);
+        }
+      });
+    } else {
+      callback(err, res);
+    }
+  });
+}
+
 function inspectContainer(containerName, callback) {
   docker.getContainer(containerName).inspect(function handler(err, res) {
     var ipaddr = res.NetworkSettings.IPAddress;
@@ -17,8 +49,8 @@ function inspectContainer(containerName, callback) {
     });
   });
 }
-function ensureStarted(hostname, image, callback) {
-  var containerName = hostname + '-443';
+function ensureStarted(hostname, image, localDataPath, callback) {
+  var containerName = hostname + '-' + image;
   var startTime = new Date().getTime();
   if (stoppingContainerWaiters[containerName]) {
     stoppingContainerWaiters[containerName].push(callback);
@@ -27,7 +59,7 @@ function ensureStarted(hostname, image, callback) {
     callback(null, startedContainers[containerName].ipaddr);
   } else {
     console.log('starting', containerName);
-    docker.getContainer(containerName).start(function handler(err, res) {
+    smartStartContainer(hostname, image, function(err, res) {
       if (err) {
         console.log('starting failed', containerName, err);
         callback(err);
