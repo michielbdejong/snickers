@@ -175,12 +175,16 @@ function startSpdy(handlerWeb, handlerWs, whitelist) {
         } else if (whitelist(servername)) {
           console.log('Registering...');
           pendingCerts[servername] = registerCert(servername, function(err, options) {
-            console.log('obtained cert', servername, options);
-            saveHttpsOptionsToDisk(servername, options, function(err) {
-              console.log('saved cert to disk', servername, err);
-            });
-            contexts[servername] = crypto.createCredentials(options).context;
-            delete pendingCerts[servername];
+            if (err) {
+              console.log('could not obtain cert', servername, err);
+            } else {
+              console.log('obtained cert', servername, options);
+              saveHttpsOptionsToDisk(servername, options, function(err2) {
+                console.log('saved cert to disk', servername, err2);
+              });
+              contexts[servername] = crypto.createCredentials(options).context;
+              delete pendingCerts[servername];
+            }
           });
         } else {
           console.log('Rejected by whitelist function');

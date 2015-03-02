@@ -15,10 +15,10 @@ function handlerWeb(req, res) {
         console.log('Error fetching statics repo for ' + req.headers.host + ' - ' + JSON.stringify(err));
         res.end('Snickers says: Error fetching statics repo for ' + req.headers.host + ' - see stdout logs for details');
       } else {
-        backends.ensureStarted(req.headers.host, config.image, localRepoPath, function(err, ipaddr) {
+        backends.ensureStarted(req.headers.host, config.application, localRepoPath, function(err, ipaddr) {
           if (err) {
             res.writeHead(500);
-            res.end('Error starting ' + config.image + ' for ' + req.headers.host + ' - ' + JSON.stringify(err));
+            res.end('Error starting ' + config.application + ' for ' + req.headers.host + ' - ' + JSON.stringify(err));
           } else {
             console.log('Proxying ' + req.headers.host + ' to http://' + ipaddr);
             dispatcher.proxyTo(req, res, ipaddr, config.port);
@@ -46,7 +46,7 @@ function handlerWeb(req, res) {
 function handlerWs (req, socket, head) {
   var config = configReader.getConfig(req.headers.host);
   if (config.type === 'backend') {
-    backends.ensureStarted(req.headers.host, config.image, function(err, ipaddr) {
+    backends.ensureStarted(req.headers.host, config.application, function(err, ipaddr) {
       if (err) {
         console.log('Error starting site, closing socket', req.headers.host);
         socket.close();
@@ -62,7 +62,7 @@ function handlerWs (req, socket, head) {
 }
 
 function whitelist(servername) {
-  return (configReader.getConfig.type !== undefined);
+  return (configReader.getConfig(servername).type !== undefined);
 }
 
 module.exports.start = function() {
