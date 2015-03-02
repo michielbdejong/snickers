@@ -8,26 +8,39 @@ var startedContainers = {},
     IDLE_LIMIT = 0.1*60000,
     BACKUP_FREQ = 0.15*60000;
 
-function createContainer(domain, image, localDataPath, callback) {
-  docker.buildImage('./backends/tar/' + image + '.tar', {t: image}, function(err, stream) {
+function createContainer(domain, application, envVars, localDataPath, callback) {
+  docker.buildImage('./backends/tar/' + application + '.tar', {t: application}, function(err, stream) {
     console.log('build err', err);
     stream.pipe(process.stdout);
     stream.on('end', function() {
-      console.log('build done, creating container now');
-      var volumes = {};
-      volumes[localDataPath+'/'+image] = '/data';
-      docker.createContainer({
-        Image: image,
-        Binds: volumes,
-        name: domain + '-' + image
-      }, callback);
+      var envVarArr = [];
+      for (var i in envVars) {
+        envVarArr.push(i + '=' + envVars[i]);
+      }
+      var options = {
+        Image: application,
+        Binds: {},
+        name: domain,
+        Hostname: domain,
+        Env: envVarArr.join(';')
+      };
+      options.Binds[localDataPath+'/'+application] = '/data';
+      console.log('build done, creating container now', options);
+      docker.createContainer(options, callback);
     });
   });
 }
-function smartStartContainer(domain, image, localDataPath, callback) {
-  docker.getContainer(domain + '-' + image).start(function(err, res) {
+
+//For now, we only listen on port 443, meaning there can only be one
+//container per domain. We'll need to add more parameters to this method
+//if we open more ports in the future. However, the local data path is
+// already /data/domains/<domain>/<config.application>
+
+function smartStartContainer(domain, localDataPath, callback) {
+  var config = configReader.getConfig(domain);
+  docker.getContainer(domain).start(function(err, res) {
     if (err && err.statusCode === 404) {
-      createContainer(domain, image, function(err, container) {
+      createContainer(domain, config.application, config.backendEnv, localDataPath, function(err, container) {
         if (err) {
           callback(err);
         } else{
@@ -50,9 +63,9 @@ function inspectContainer(containerName, callback) {
     });
   });
 }
-function ensureStarted(hostname, image, localDataPath, callback) {
-  console.log('ensureStarted', hostname, image, localDataPath, callback);
-  var containerName = hostname + '-' + image;
+function ensureStarted(hostname, localDataPath, callback) {
+  console.log('ensureStarted', hostname, localDataPath, callback);
+  var containerName = hostname;
   var startTime = new Date().getTime();
   if (stoppingContainerWaiters[containerName]) {
     stoppingContainerWaiters[containerName].push(callback);
@@ -61,7 +74,7 @@ function ensureStarted(hostname, image, localDataPath, callback) {
     callback(null, startedContainers[containerName].ipaddr);
   } else {
     console.log('starting', containerName);
-    smartStartContainer(hostname, image, function(err, res) {
+    smartStartContainer(hostname, localDataPath, function(err, res) {
       if (err) {
         console.log('starting failed', containerName, err);
         callback(err);
@@ -170,9 +183,9 @@ function buildBaseContainers(list, callback) {
     callback();
     return;
   }
-  var image = list.pop();
-  docker.buildImage('./backends/tar/' + image + '.tar',
-      {t: image},
+  var application = list.pop();
+  docker.buildImage('./backends/tar/' + application + '.tar',
+      {t: application},
       function(err, stream) {
     if (err) {
       console.log(err);
