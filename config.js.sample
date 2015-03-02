@@ -16,6 +16,7 @@ var config = {
   backupServers: {
     origin: 'git@backmeup.com',
     secondary: 'ssh://me@atlanta.biz:422/home/me'
-  }
+  },
+  baseContainers: [ 'lamp' ]
 };
 require('fs').writeFile('config.json', JSON.stringify(config));

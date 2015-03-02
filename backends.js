@@ -1,5 +1,6 @@
 var Docker = require('dockerode'),
-    docker = new Docker();
+    docker = new Docker(),
+    configReader = require('./config-reader');
 
 var startedContainers = {},
     stoppingContainerWaiters = {},
@@ -163,15 +164,35 @@ function checkIdle() {
   });
 }
 
-//...
-updateContainerList();
-setInterval(checkIdle, IDLE_CHECK_FREQ);
-setInterval(function() {
-  updateContainerList(function() {
-    for (var containerName in startedContainers) {
-      backupContainer(containerName);
-    }
+function buildBaseContainers(list, callback) {
+  if (list.length === 0) {
+    console.log('Done building base containers');
+    callback();
+    return;
+  }
+  var image = list.pop();
+  docker.buildImage('./backends/tar/' + image + '.tar',
+      {t: image},
+      function(err, stream) {
+    stream.pipe(process.stdout);
+    stream.on('end', function() {
+      buildBaseContainers(list, callback);
+    });
   });
-}, BACKUP_FREQ);
+}
 
+//...
+module.exports.init = function(callback) {
+  buildBaseContainers(configReader.getBaseContainers(), function() {
+    setInterval(checkIdle, IDLE_CHECK_FREQ);
+    setInterval(function() {
+      updateContainerList(function() {
+        for (var containerName in startedContainers) {
+          backupContainer(containerName);
+        }
+      });
+    }, BACKUP_FREQ);
+    updateContainerList(callback);
+  });
+};
 module.exports.ensureStarted = ensureStarted;

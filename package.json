@@ -1,13 +1,17 @@
 {
   "name": "snickers",
+  "repository": "https://github.com/michielbdejong/snickers",
+  "version": "0.0.0",
   "dependencies": {
     "dockerode": "*",
     "spdy": "*",
     "http-proxy": "*",
-    "crypto": "*",
     "node-static": "*",
     "git-tools": "*",
-    "native-dns": "*"
+    "native-dns": "*",
+    "mkdirp": "*",
+    "async": "0.9.0",
+    "node-forge": "0.6.20"
   },
   "main": "snickers.js"
 }

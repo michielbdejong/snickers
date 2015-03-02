@@ -7,7 +7,6 @@ var fs = require('fs'),
     mkdirp = require('mkdirp'),
     acme = require('./node-acme/acme'),
     spdy = require('spdy'),
-    express = require('express'),
     crypto = require('crypto');
 
 var acmeServer = 'www.letsencrypt-demo.org';

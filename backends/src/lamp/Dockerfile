@@ -30,6 +30,7 @@ RUN apt-get update \
 COPY apache.conf /etc/apache2/sites-enabled/000-default.conf
 COPY init /init
 COPY run.sh /run.sh
+COPY backup.sh /backup.sh
 RUN sed -i "s/variables_order.*/variables_order = \"EGPCS\"/g" /etc/php5/apache2/php.ini \
 	&& a2enmod rewrite \
 	&& chmod 755 /run.sh

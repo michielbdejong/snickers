@@ -66,5 +66,7 @@ function whitelist(servername) {
 }
 
 module.exports.start = function() {
-  listener.startSpdy(handlerWeb, handlerWs, whitelist);
+  backends.init(function() {
+    listener.startSpdy(handlerWeb, handlerWs, whitelist);
+  });
 }
