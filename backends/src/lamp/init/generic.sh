@@ -23,7 +23,7 @@ for i in `seq 1 10`; do
     sleep 1
 done
 
-if [ -f /data/dump.sql ];
+if [ -f /data/dump.sql ]; then
     mysql < /data/dump.sql
     echo FLUSH PRIVILEGES | mysql
 else
