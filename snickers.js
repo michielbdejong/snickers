@@ -8,7 +8,7 @@ var http = require('http'),
 //...
 spdy.start();
 mail.start();
-dns.start();
+//dns.start();
 
 http.createServer(function(req, res) {
   var config = configReader.getConfig(req.headers.host),

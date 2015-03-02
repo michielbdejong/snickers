@@ -257,7 +257,7 @@ module.exports.init = function(callback) {
     
     updateContainerList(callback);
     buildImages(configReader.getImagesList('target'), function() {
-      console.log('Done building target containers in the background');
+      console.log('Done building target images in the background');
     });
   });
 };
