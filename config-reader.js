@@ -1,6 +1,6 @@
 var fs = require('fs');
 
-var CONFIG_LOAD_FREQ = 60*1000;
+var CONFIG_LOAD_INTERVAL = 60*1000;
 
 
 var config;
@@ -37,7 +37,7 @@ function getConfig(domain) {
   }
 }
 
-setInterval(loadConfig, CONFIG_LOAD_FREQ);
+setInterval(loadConfig, CONFIG_LOAD_INTERVAL);
 loadConfig(true);
 module.exports.getConfig = getConfig;
 module.exports.getBackupServer = function(which) {
@@ -47,11 +47,9 @@ module.exports.getBackupServer = function(which) {
     return null;
   }
 }
-module.exports.getIntermediateImages = function() {
-  console.log(config, config.intermediateImages);
-  if (config && config.intermediateImages) {
-    console.log(config.intermediateImages);
-    return config.intermediateImages;
+module.exports.getImagesList = function(which) {
+  if (config && config.images && config.images[which]) {
+    return config.images[which];
   } else {
     return [];
   }

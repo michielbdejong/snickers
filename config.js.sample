@@ -17,6 +17,10 @@ var config = {
     origin: 'git@backmeup.com',
     secondary: 'ssh://me@atlanta.biz:422/home/me'
   },
-  baseContainers: [ 'lamp' ]
+  images: {
+    upstream: ['debian:jessie'],
+    intermediate: [ 'lamp' ],
+    target: ['wordpress']//here you can disable the ones you don't use
+  }
 };
 require('fs').writeFile('config.json', JSON.stringify(config));

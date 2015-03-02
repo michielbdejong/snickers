@@ -4,9 +4,10 @@ var Docker = require('dockerode'),
 
 var startedContainers = {},
     stoppingContainerWaiters = {},
-    IDLE_CHECK_FREQ = 0.1*60000,
+    IDLE_CHECK_INTERVAL = 0.1*60000,
     IDLE_LIMIT = 0.1*60000,
-    BACKUP_FREQ = 0.15*60000;
+    BACKUP_INTERVAL = 0.15*60000;
+    REBUILD_INTERVAL = 60*60000;
 
 function createContainer(domain, application, envVars, localDataPath, callback) {
   docker.buildImage('./backends/tar/' + application + '.tar', {t: application}, function(err, stream) {
@@ -177,15 +178,33 @@ function checkIdle() {
   });
 }
 
-function buildIntermediateImages(list, callback) {
+function pullImages(list, callback) {
   if (list.length === 0) {
-    console.log('Done building base containers');
+    console.log('Done pulling images');
     callback();
     return;
   }
-  var application = list.pop();
-  docker.buildImage('./backends/tar/' + application + '.tar',
-      {t: application},
+  var tag = list.pop();
+  docker.pull(tag, function(err, stream) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    stream.pipe(process.stdout);
+    stream.on('end', function() {
+      pullImages(list, callback);
+    });
+  });
+}
+function buildImages(list, callback) {
+  if (list.length === 0) {
+    console.log('Done building images');
+    callback();
+    return;
+  }
+  var tag = list.pop();
+  docker.buildImage('./backends/tar/' + tag + '.tar',
+      {t: tag},
       function(err, stream) {
     if (err) {
       console.log(err);
@@ -193,23 +212,53 @@ function buildIntermediateImages(list, callback) {
     }
     stream.pipe(process.stdout);
     stream.on('end', function() {
-      buildIntermediateImages(list, callback);
+      buildImages(list, callback);
     });
   });
 }
-
+function rebuildAll() {
+  pullImages(configReader.getImagesList('upstream'), function(err) {
+    if (err) {
+      console.log('error building upstreams');
+    } else {
+      buildImages(configReader.getImagesList('intermediate'), function(err) {
+        if (err) {
+          console.log('error building intermediates');
+        } else {
+          buildImages(configReader.getImagesList('target'), function(err) {
+            if (err) {
+              console.log('error building targets');
+            } else {
+            }
+          });
+        }
+      });
+    }
+  });
+}
 //...
 module.exports.init = function(callback) {
-  buildIntermediateImages(configReader.getIntermediateImages(), function() {
-    setInterval(checkIdle, IDLE_CHECK_FREQ);
+  //on startup, we just need to double-check that all intermediates are present
+  //if any upstreams are missing, they will be pulled in automatically when building
+  //the intermediates that need them.
+  //target images will be built when needed to create a container.
+  buildImages(configReader.getImagesList('intermediate'), function() {
+    setInterval(checkIdle, IDLE_CHECK_INTERVAL);
     setInterval(function() {
       updateContainerList(function() {
         for (var containerName in startedContainers) {
           backupContainer(containerName);
         }
       });
-    }, BACKUP_FREQ);
+    }, BACKUP_INTERVAL);
+    //every hour, check if there were any changes in the upstream containers, and if so
+    //rebuild all intermediates and targets
+    setInterval(rebuildAll, REBUILD_INTERVAL);
+    
     updateContainerList(callback);
+    buildImages(configReader.getImagesList('target'), function() {
+      console.log('Done building target containers in the background');
+    });
   });
 };
 module.exports.ensureStarted = ensureStarted;
