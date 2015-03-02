@@ -12,4 +12,4 @@ else
     echo Not first run!
 fi
 
-tail /var/log/*
+tail -f /var/log/*
