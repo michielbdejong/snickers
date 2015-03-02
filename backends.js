@@ -174,6 +174,10 @@ function buildBaseContainers(list, callback) {
   docker.buildImage('./backends/tar/' + image + '.tar',
       {t: image},
       function(err, stream) {
+    if (err) {
+      console.log(err);
+      return;
+    }
     stream.pipe(process.stdout);
     stream.on('end', function() {
       buildBaseContainers(list, callback);

@@ -1,4 +1,4 @@
-FROM michielbdejong/lamp-git
+FROM lamp
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -9,6 +9,4 @@ RUN apt-get update \
 
 RUN cd /root && curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 
-COPY init/wordpress.sh /init/wordpress.sh
-
-CMD sh /init/wordpress.sh https://exampledomain.com/ "Example Domain" "example" "example@elsewhere.com"
+COPY init/wordpress.sh /init/do.sh
