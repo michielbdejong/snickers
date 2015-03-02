@@ -177,7 +177,7 @@ function checkIdle() {
   });
 }
 
-function buildBaseContainers(list, callback) {
+function buildIntermediateImages(list, callback) {
   if (list.length === 0) {
     console.log('Done building base containers');
     callback();
@@ -193,14 +193,14 @@ function buildBaseContainers(list, callback) {
     }
     stream.pipe(process.stdout);
     stream.on('end', function() {
-      buildBaseContainers(list, callback);
+      buildIntermediateImages(list, callback);
     });
   });
 }
 
 //...
 module.exports.init = function(callback) {
-  buildBaseContainers(configReader.getBaseContainers(), function() {
+  buildIntermediateImages(configReader.getIntermediateImages(), function() {
     setInterval(checkIdle, IDLE_CHECK_FREQ);
     setInterval(function() {
       updateContainerList(function() {

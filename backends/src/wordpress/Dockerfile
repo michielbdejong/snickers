@@ -9,4 +9,5 @@ RUN apt-get update \
 
 RUN cd /root && curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 
+RUN rm init/do.sh
 COPY init/wordpress.sh /init/do.sh

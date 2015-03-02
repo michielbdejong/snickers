@@ -47,11 +47,11 @@ module.exports.getBackupServer = function(which) {
     return null;
   }
 }
-module.exports.getBaseContainers = function() {
-  console.log(config, config.baseContainers);
-  if (config && config.baseContainers) {
-    console.log(config.baseContainers);
-    return config.baseContainers;
+module.exports.getIntermediateImages = function() {
+  console.log(config, config.intermediateImages);
+  if (config && config.intermediateImages) {
+    console.log(config.intermediateImages);
+    return config.intermediateImages;
   } else {
     return [];
   }
