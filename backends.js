@@ -23,7 +23,7 @@ function createContainer(domain, application, envVars, localDataPath, callback) 
         Binds: {},
         name: domain,
         Hostname: domain,
-        Env: envVarArr.join(';')
+        Env: envVarArr
       };
       options.Binds[localDataPath+'/'+application] = '/data';
       console.log('build done, creating container now', options);

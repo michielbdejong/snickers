@@ -21,6 +21,7 @@ function handlerWeb(req, res) {
             res.end('Error starting ' + config.application + ' for ' + req.headers.host + ' - ' + JSON.stringify(err));
           } else {
             console.log('Proxying ' + req.headers.host + ' to http://' + ipaddr);
+            req.headers['X-Forwarded-Proto'] = 'https';
             dispatcher.proxyTo(req, res, ipaddr, config.port);
           }
         });
@@ -58,6 +59,7 @@ function handlerWs (req, socket, head) {
            socket.close();
          } else {
            console.log('Proxying ' + containerName + ' to ws://' + ipaddr);
+           req.headers['X-Forwarded-Proto'] = 'https';
            dispatcher.proxyWsTo(req, socket, head, ipaddr, config.port);
          }
        });
