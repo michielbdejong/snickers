@@ -19,9 +19,8 @@ function createContainer(domain, application, envVars, localDataPath, callback) 
       for (var i in envVars) {
         envVarArr.push(i + '=' + envVars[i]);
       }
-      var options = {
+      var createOptions = {
         Image: application,
-        Binds: [ localDataPath + '/' + application + ':/data'],
         name: domain,
         Hostname: domain,
         Env: envVarArr
@@ -30,8 +29,16 @@ function createContainer(domain, application, envVars, localDataPath, callback) 
         if (err) {
           callback('could not create local data path on host!' + e);
         } else {
-          console.log('build done, creating container now', options);
-          docker.createContainer(options, callback);
+          console.log('build done, creating container now', createOptions);
+          docker.createContainer(createOptions, function(err, container) {
+            try {
+              container.defaultOptions.start.Binds = [ localDataPath + '/' + application + ':/data'];
+            } catch(e) {
+              callback('Could not bind in local data' + e);
+              return;
+            }
+            callback(err, container);
+          });
         }
       });
     });
@@ -63,7 +70,6 @@ function smartStartContainer(domain, localDataPath, callback) {
 function inspectContainer(containerName, callback) {
   docker.getContainer(containerName).inspect(function handler(err, res) {
     var ipaddr = res.NetworkSettings.IPAddress;
-    //console.log('inspection', ipaddr);
     callback(err, {
       ipaddr: ipaddr,
       lastAccessed: new Date().getTime()
