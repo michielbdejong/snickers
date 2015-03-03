@@ -1,16 +1,22 @@
 #!/bin/bash
 
+# This script is run in the following situations:
+# * The domain is new, and data repo is still empty
+# * The domain was switched from a different application
+# * The domain was reset to initial settings by deleting all its data
+
 ADMIN_PASSWORD=`pwgen 40 1`
 URL=https://`hostname`/
+
+# Make sure to set these environment variables in your config.js.
+# Because of https://github.com/jpetazzo/nsenter/issues/62 I tend to
+# avoid spaces in these:
 
 echo url: $URL
 echo title: $TITLE
 echo admin user: $ADMIN_USER
 echo admin password: $ADMIN_PASSWORD
 echo admin email: $ADMIN_EMAIL
-
-echo Generic lamp-git initialization...
-sh /init/generic.sh
 
 echo Unpacking latest WordPress into /data/www-content...
 php /root/wp-cli.phar --path="/data/www-content" --allow-root core download

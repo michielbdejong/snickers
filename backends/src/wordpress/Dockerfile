@@ -8,5 +8,4 @@ ENV DEBIAN_FRONTEND noninteractive
 # this repo), and it's also good to always have its latest version. So for now, I'll keep it this way
 RUN cd /root && curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 
-RUN rm init/do.sh
-COPY init/wordpress.sh /init/do.sh
+COPY install-application.sh /install-application.sh
