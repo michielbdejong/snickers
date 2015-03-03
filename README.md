@@ -40,7 +40,7 @@ This means migrations are as easy as switching the DNS and hitting the domain on
 
 ### WARNING: not all of this is implemented yet, so this will not yet currently work like this.
 
-Snickers requires Docker, nodejs, and the packages it installs when you run `npm install` in the root of this repo. I use screen to
+Snickers requires Docker 1.3+, nodejs, and the packages it installs when you run `npm install` in the root of this repo. I use screen to
 run `node ./snickers` in a loop (configure the server to restart this screen on startup, in case it reboots).
 
 The only configuration you need to give snickers is the location of its two backup servers. It will store data locally in `/data`, by default.
