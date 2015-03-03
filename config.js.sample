@@ -4,7 +4,9 @@ var config = {
     'example.com': {
       type: 'backend', //see 'backends/' folder in this repo
       application: 'known',
-      otherEmail: 'user@gmail.com'
+      otherEmail: 'user@gmail.com',
+      backendEnv: {
+      }
     },
     'example2.com': {
       type: 'static-pull',
