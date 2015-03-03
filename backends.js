@@ -1,6 +1,7 @@
 var Docker = require('dockerode'),
     docker = new Docker(),
-    configReader = require('./config-reader');
+    configReader = require('./config-reader'),
+    mkdirp = require('mkdirp');
 
 var startedContainers = {},
     stoppingContainerWaiters = {},
@@ -26,8 +27,14 @@ function createContainer(domain, application, envVars, localDataPath, callback) 
         Env: envVarArr
       };
       options.Binds[localDataPath+'/'+application] = '/data';
-      console.log('build done, creating container now', options);
-      docker.createContainer(options, callback);
+      mkdirp(localDataPath+'/'+application, function(err) {
+        if (err) {
+          callback('could not create local data path on host!' + e);
+        } else {
+          console.log('build done, creating container now', options);
+          docker.createContainer(options, callback);
+        }
+      });
     });
   });
 }
