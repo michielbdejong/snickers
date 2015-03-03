@@ -1,13 +1,14 @@
 var Docker = require('dockerode'),
     docker = new Docker(),
     configReader = require('./config-reader'),
-    mkdirp = require('mkdirp');
+    mkdirp = require('mkdirp'),
+    repos = require('./repos');
 
 var startedContainers = {},
     stoppingContainerWaiters = {},
     IDLE_CHECK_INTERVAL = 0.1*60000,
     IDLE_LIMIT = 0.1*60000,
-    BACKUP_INTERVAL = 0.15*60000;
+    BACKUP_INTERVAL = 60*60000;
     REBUILD_INTERVAL = 60*60000;
 
 function createContainer(domain, application, envVars, localDataPath, callback) {
@@ -138,9 +139,16 @@ function updateContainerList(callback) {
 function backupContainer(containerName, callback) {
   docker.getContainer(containerName).exec({ Cmd: 'sh /backup.sh' }, function(err) {
     console.log('result of sh /backup.sh', err);
-    if (callback) {
-      callback(err);
-    }
+    repos.pushOutBackup(containerName, function(err) {
+      if (err) {
+        console.log('pushed out backup failure!'+err);
+      } else {
+        console.log('pushed out backup success!');
+      }
+      if (callback) {
+        callback(err);
+      }
+    });
   });
 }
 
