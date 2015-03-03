@@ -21,12 +21,11 @@ function createContainer(domain, application, envVars, localDataPath, callback) 
       }
       var options = {
         Image: application,
-        Binds: {},
+        Binds: [ localDataPath + '/' + application + ':/data'],
         name: domain,
         Hostname: domain,
         Env: envVarArr
       };
-      options.Binds[localDataPath+'/'+application] = '/data';
       mkdirp(localDataPath+'/'+application, function(err) {
         if (err) {
           callback('could not create local data path on host!' + e);
