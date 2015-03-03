@@ -33,7 +33,13 @@ else
         # * The domain is new, and data repo is still empty
         # * The domain was switched to a different application
         # * The domain was reset to initial settings by deleting all its data
-        sh /install-lamp-generic.sh
+
+        mkdir -p /data/www-content
+        touch /data/dump.sql
+            
+        chown -R root:www-data /data
+        chmod -R 750 /data/www-content
+
         if [ -f /install-application.sh ]; then
             sh /install-application.sh
         fi
@@ -41,4 +47,3 @@ else
 fi
 
 tail -f /var/log/*
-
