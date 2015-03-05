@@ -6,3 +6,5 @@ cd ../../src/known
 tar -cf ../../tar/known.tar *
 cd ../../src/trovebox
 tar -cf ../../tar/trovebox.tar *
+cd ../../src/owncloud
+tar -cf ../../tar/owncloud.tar *
