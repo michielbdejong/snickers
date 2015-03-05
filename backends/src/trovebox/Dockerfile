@@ -24,8 +24,8 @@ RUN apt-get update \
 		php-apc \
 		postfix \
 		wget \
-	&& rm -rf /var/lib/apt/lists/* \
-	&& a2enmod rewrite \
+	&& rm -rf /var/lib/apt/lists/*
+RUN a2enmod rewrite \
 	&& a2enmod deflate \
 	&& a2enmod expires \
 	&& a2enmod headers \
