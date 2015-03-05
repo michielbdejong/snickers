@@ -2,7 +2,7 @@ FROM debian:jessie
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# pwgen was the only package wordpress installed on top, and since it's so small, to keep the
+# pwgen was the only package wordpress and other applications installed on top, and since it's so small, to keep the
 # rebuilds fast, I moved it here. Now, this here is the only `apt-get update` we have to do when building
 # the whole debian:jessie -> lamp -> wordpress dependency chain.
 RUN apt-get update \
