@@ -4,7 +4,7 @@ VERSION="8.0.0"
 
 echo "Extracting ownCloud ${VERSION}..."
 cd /data
-tar xjf /init/owncloud-$VERSION.tar.bz2
+tar xjf /owncloud-$VERSION.tar.bz2
 rm -rf www-content
 mv owncloud www-content
 
