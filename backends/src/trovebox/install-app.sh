@@ -1,8 +1,10 @@
 #!/bin/bash
 
-sed -i "s/yourdomainname.com/`cat /data/hostname`/g" /etc/apache2/sites-enabled/openphoto.conf
-
-if [ ! -L /var/www/openphoto/src/userdata ]; then
-  mv /var/www/openphoto/src/userdata /data;
-  ln -s /data/userdata /var/www/openphoto/src/userdata;
-fi
+tar -zxvf openphoto.tar.gz > /dev/null 2>&1
+mv photo-frontend-* /data/www-content
+mkdir /data/www-content/src/userdata
+chown www-data:www-data /data/www-content/src/userdata
+mkdir /data/www-content/src/html/assets/cache 
+chown www-data:www-data /data/www-content/src/html/assets/cache
+mkdir /data/www-content/src/html/photos
+chown www-data:www-data /data/www-content/src/html/photos

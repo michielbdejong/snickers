@@ -26,6 +26,11 @@ else
         # * The container was deleted (not just stopped) for whatever other reason
         mysql < /data/dump.sql
         echo FLUSH PRIVILEGES | mysql
+
+        if [ -f /launch-application.sh ]; then
+            sh /launch-application.sh
+        fi
+
         touch /init.done
     else
         echo Creating data for the first time!
