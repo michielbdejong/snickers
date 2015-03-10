@@ -39,5 +39,10 @@ COPY backup.sh /backup.sh
 COPY install-application.sh /install-application.sh
 COPY launch-application.sh /launch-application.sh
 
+COPY apache.conf /etc/apache2/sites-available/openphoto.conf
+RUN sed 's/\/path\/to\/openphoto\/html\/directory/\/data\/www-content\/src\/html/g' /data/www-content/src/configs/openphoto-vhost.conf > /etc/apache2/sites-available/openphoto.conf \
+	&& a2dissite 000-default \
+	&& a2ensite openphoto
+
 CMD ["/run.sh"]
 EXPOSE 80
