@@ -11,8 +11,6 @@ for i in `seq 1 10`; do
     sleep 1
 done
 
-source /etc/apache2/envvars
-exec apache2 &
 /etc/init.d/postfix start
 
 if [ -f /data/dump.sql ] || [ -f /data/www-content ]; then
@@ -52,5 +50,8 @@ else
 
     touch /init.done
 fi
+
+source /etc/apache2/envvars
+exec apache2 &
 
 tail -f /var/log/*/*
