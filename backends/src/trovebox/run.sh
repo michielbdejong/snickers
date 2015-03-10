@@ -53,4 +53,4 @@ else
     touch /init.done
 fi
 
-tail -f /var/log/*
+tail -f /var/log/*/*
