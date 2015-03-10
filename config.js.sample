@@ -15,9 +15,9 @@ require('config-reader').updateConfig({
       otherEmail: 'user@gmail.com'
     }
   },
-  backupServers: {
-    origin: 'git@backmeup.com',
-    secondary: 'ssh://me@atlanta.biz:422/home/me'
+  backupServerPaths: {
+    origin: 'git@backmeup.com:',
+    secondary: 'ssh://me@atlanta.biz:422/home/me/'
   },
   images: {
     upstream: ['debian:jessie'],

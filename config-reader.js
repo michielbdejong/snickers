@@ -45,9 +45,9 @@ module.exports.init = function() {
   loadConfig(true);
 };
 module.exports.getConfig = getConfig;
-module.exports.getBackupServer = function(which) {
-  if (config && config.backupServers) {
-    return config.backupServers[which];
+module.exports.getBackupServerPath = function(which) {
+  if (config && config.backupServerPaths) {
+    return config.backupServerPaths[which];
   } else {
     return null;
   }
@@ -90,9 +90,13 @@ function checkDomain(host, config, callback) {
     callback('unknown type ' + JSON.stringify(config));
   }
 }
-function checkDomains(domains, callback) {
+function checkDomains(domains, defaultBackupServerPath, callback) {
   async.each(Object.keys(domains), function(i, doneThis) {
-    checkDomain(i, domains[i], doneThis);
+    var thisConf = domains[i];
+    if (!thisConf.repo) {
+      thisConf.repo = defaultBackupServerPath + i;
+    }
+    checkDomain(i, thisConf, doneThis);
   }, callback);
 }
 module.exports.updateConfig = function(confObj) {
@@ -102,22 +106,26 @@ module.exports.updateConfig = function(confObj) {
       && Array.isArray(confObj.images.upstream)
       && Array.isArray(confObj.images.intermediate)
       && Array.isArray(confObj.images.target)
-      && typeof confObj.backupServers === 'object'
-      && typeof confObj.backupServers.origin === 'string'
-      && typeof confObj.backupServers.secondary === 'string') {
+      && typeof confObj.backupServerPaths === 'object'
+      && typeof confObj.backupServerPaths.origin === 'string'
+      && typeof confObj.backupServerPaths.secondary === 'string') {
       
     backends.rebuildAll(confObj.images, function(err) {
       if (err) {
         console.log('error rebuilding images', err);
       } else {
-        checkDomains(confObj.domains, function() {
-          fs.writeFile('config.json', JSON.stringify(confObj), function(err) {
-            if (err) {
-              console.log('error writing config.json');
-            } else {
-              console.log('wrote config.json');
-            }
-          });
+        checkDomains(confObj.domains, confObj.backupServerPaths.origin, function(err) {
+          if (err) {
+            console.log(err);
+          } else {
+            fs.writeFile('config.json', JSON.stringify(confObj), function(err) {
+              if (err) {
+                console.log('error writing config.json');
+              } else {
+                console.log('wrote config.json');
+              }
+            });
+          }
         });
       }
     });

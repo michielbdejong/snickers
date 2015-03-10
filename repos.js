@@ -44,18 +44,18 @@ module.exports.ensurePresent = function(domain, remotePath, callback) {
       callback(null, localPath);
     } else {
       if (!remotePath) {
-        var backupServer = configReader.getBackupServer('origin');
-        if (!backupServer) {
-          calback('Cannot clone repo! No remotePath specified, and no origin backup server in config');
+        var backupServerPath = configReader.getBackupServerPath('origin');
+        if (!backupServerPath) {
+          callback('Cannot clone repo! No remotePath specified, and no origin backup server in config');
           return;
         }
-        remotePath = backupServer + ':' + domain;
-        var secondaryBackupServer = configReader.getBackupServer('secondary');
-        if (!secondaryBackupServer) {
+        remotePath = backupServerPath + domain;
+        var secondaryBackupServerPath = configReader.getBackupServerPath('secondary');
+        if (!secondaryBackupServerPath) {
           calback('No remotePath specified, and refusing to clone a backed-up repo without a secondary!');
           return;
         }
-        secondaryPath = secondaryBackupServer + ':' + domain;
+        secondaryPath = secondaryBackupServerPath + domain;
       }
       console.log('cloning', remotePath, localPath);
       Repo.clone({
