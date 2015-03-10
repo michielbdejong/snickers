@@ -11,6 +11,7 @@ var fs = require('fs'),
 
 var acmeServer = 'www.letsencrypt-demo.org';
 var certificatesFolder = '/etc/letsencrypt/';
+var CERT_LOAD_FREQ = 10*60000;//load certs from disk every 10 minutes
 
 var DEFAULT_KEY =
   "-----BEGIN RSA PRIVATE KEY-----\n" +
@@ -214,6 +215,11 @@ function startSpdy(handlerWeb, handlerWs, whitelist) {
   loadContexts(function(err, data) {
     contexts[data.domain] = data.context;
   });
+  setInterval(function() {
+    loadContexts(function(err, data) {
+      contexts[data.domain] = data.context;
+    });
+  }, CERT_LOAD_FREQ);
 
   server.listen(443);
 
