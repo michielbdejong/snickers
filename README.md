@@ -50,9 +50,37 @@ that the user as which you run snickers does have access to them.
 
 Now run `node config.js` to generate `config.json`, which Snicker will load in once every minute.
 
-To add a domain, it's not necessary to restart snickers. Just add it in config.js, run `node config`, and within the next 60 seconds,
-snickers will have picked it up and started the deploy.
+To add a domain, it's not necessary to restart snickers. Just make sure it exists on the backup servers, add it in config.js,
+run `node config`, and within the next 60 seconds, snickers will have picked it up and started the deploy.
 
 By default, a LetsEncrypt cert will be used. To install a different TLS certificate (for instance from StartSSL),
-concatenate the public cert into `/etc/letsencrypt/<example.com>/cert.pem` and the private key into
-`/etc/letsencrypt/<example.com>/key.pem` (I will add support for chain certs soon).
+concatenate the public cert into `/etc/letsencrypt/<example.com>/cert.pem`, the private key into
+`/etc/letsencrypt/<example.com>/key.pem`, and the chain cert (if any) into
+`/etc/letsencrypt/<example.com>/ca.pem`. Snickers will scan this folder every 10 minutes, and start using the new cert when it
+finds it.
+
+It's probably a good idea to save your config.js and/or config.json to a private git repo, and if you use StartSSL or other
+hand-registered certs, you may want to do the same with /etc/letsencrypt.
+
+Snickers distinguishes between the following states of a domain:
+
+* Fresh: exists only in the config and on the backup servers
+* Checked out: repo has been checked out locally but is still empty
+* Installed: repo has been checked out locally and contains data
+
+and the following states of a container:
+
+* Built: the image for it exists
+* Created: the container for it exists
+* Started: the container is started
+* Launched: where needed the data from the repo is loaded into the non-mounted parts of the container (db loaded from dump, etc)
+
+If you migrate a domain from one server to another (by updating the config of the receiving server and pointing DNS),
+then it will be in fresh state until the first http request for it comes in, and then it will automatically bring the domain to
+checked-out state, then the container to started state, then since it detects that data is already there, it will go right ahead
+and launch the application.
+
+If you remove a stopped container with `docker rm` then it will be created, started, and launched again when a new hit comes in.
+
+If you add a new domain, then it will install the application on first run (after starting the container, but before launching the
+application).
