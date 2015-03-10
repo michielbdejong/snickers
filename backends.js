@@ -1,5 +1,6 @@
 var Docker = require('dockerode'),
     docker = new Docker(),
+    async = require('async'),
     configReader = require('./config-reader'),
     mkdirp = require('mkdirp'),
     repos = require('./repos');
@@ -199,42 +200,32 @@ function checkIdle() {
 }
 
 function pullImages(list, callback) {
-  if (list.length === 0) {
-    console.log('Done pulling images');
-    callback();
-    return;
-  }
-  var tag = list.pop();
-  docker.pull(tag, function(err, stream) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    stream.pipe(process.stdout);
-    stream.on('end', function() {
-      pullImages(list, callback);
+  async.eachSeries(list, function(tag, doneThis) {
+    docker.pull(tag, function(err, stream) {
+      if (err) {
+        doneThis(err);
+      } else {
+        stream.pipe(process.stdout);
+        stream.on('end', doneThis);
+      }
     });
-  });
+  }, callback);
 }
 function buildImages(list, callback) {
-  if (list.length === 0) {
-    console.log('Done building images');
-    callback();
-    return;
-  }
-  var tag = list.pop();
-  docker.buildImage('./backends/tar/' + tag + '.tar',
-      {t: tag},
-      function(err, stream) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    stream.pipe(process.stdout);
-    stream.on('end', function() {
-      buildImages(list, callback);
+  console.log('image list', list);
+  async.eachSeries(list, function(tag, doneThis) {
+    console.log('tag', tag);
+    docker.buildImage('./backends/tar/' + tag + '.tar',
+        {t: tag},
+        function(err, stream) {
+      if (err) {
+        doneThis(err);
+      } else {
+        stream.pipe(process.stdout);
+        stream.on('end', doneThis);
+      }
     });
-  });
+  }, callback);
 }
 function rebuildAll(images, callback) {
   if (!images) {
@@ -244,34 +235,13 @@ function rebuildAll(images, callback) {
       target: configReader.getImagesList('target')
     };
   }
-  pullImages(images.upstream, function(err) {
-    if (err) {
-      console.log('error building upstreams');
-      if (callback) {
-        callback(err);
-      }
-    } else {
-      buildImages(images.intermediate, function(err) {
-        if (err) {
-          console.log('error building intermediates');
-          if (callback) {
-            callback(err);
-          }
-        } else {
-          buildImages(images.target, function(err) {
-            if (err) {
-              console.log('error building targets');
-              if (callback) {
-                callback(err);
-              }
-            } else if (callback) {
-              callback();
-            }
-          });
-        }
-      });
-    }
-  });
+  async.series([function(doneThis) {
+    pullImages(images.upstream, doneThis);
+  }, function(doneThis) {
+      buildImages(images.intermediate, doneThis);
+  }, function(doneThis) {
+      buildImages(images.target, doneThis);
+  }], callback);
 }
 module.exports.rebuildAll = rebuildAll;
 module.exports.init = function(callback) {
