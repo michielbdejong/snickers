@@ -1,5 +1,5 @@
 //Simple tool to write config.json:
-var config = {
+require('config-reader').updateConfig({
   domains: {
     'example.com': {
       type: 'backend', //see 'backends/' folder in this repo
@@ -24,5 +24,4 @@ var config = {
     intermediate: [ 'lamp' ],
     target: ['wordpress']//here you can disable the ones you don't use
   }
-};
-require('fs').writeFile('config.json', JSON.stringify(config));
+});

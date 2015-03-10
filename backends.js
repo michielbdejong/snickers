@@ -236,19 +236,36 @@ function buildImages(list, callback) {
     });
   });
 }
-function rebuildAll() {
-  pullImages(configReader.getImagesList('upstream'), function(err) {
+function rebuildAll(images, callback) {
+  if (!images) {
+    images = {
+      upstream: configReader.getImagesList('upstream'),
+      intermediate: configReader.getImagesList('intermediate'),
+      target: configReader.getImagesList('target')
+    };
+  }
+  pullImages(images.upstream, function(err) {
     if (err) {
       console.log('error building upstreams');
+      if (callback) {
+        callback(err);
+      }
     } else {
-      buildImages(configReader.getImagesList('intermediate'), function(err) {
+      buildImages(images.intermediate, function(err) {
         if (err) {
           console.log('error building intermediates');
+          if (callback) {
+            callback(err);
+          }
         } else {
-          buildImages(configReader.getImagesList('target'), function(err) {
+          buildImages(images.target, function(err) {
             if (err) {
               console.log('error building targets');
-            } else {
+              if (callback) {
+                callback(err);
+              }
+            } else if (callback) {
+              callback();
             }
           });
         }
@@ -256,7 +273,7 @@ function rebuildAll() {
     }
   });
 }
-//...
+module.exports.rebuildAll = rebuildAll;
 module.exports.init = function(callback) {
   //on startup, we just need to double-check that all intermediates are present
   //if any upstreams are missing, they will be pulled in automatically when building

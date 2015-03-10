@@ -1,4 +1,7 @@
-var fs = require('fs');
+var fs = require('fs'),
+    async = require('async'),
+    repos = require('./repos'),
+    backends = require('./backends');
 
 var CONFIG_LOAD_INTERVAL = 60*1000;
 
@@ -37,8 +40,10 @@ function getConfig(domain) {
   }
 }
 
-setInterval(loadConfig, CONFIG_LOAD_INTERVAL);
-loadConfig(true);
+module.exports.init = function() {
+  setInterval(loadConfig, CONFIG_LOAD_INTERVAL);
+  loadConfig(true);
+};
 module.exports.getConfig = getConfig;
 module.exports.getBackupServer = function(which) {
   if (config && config.backupServers) {
@@ -47,10 +52,76 @@ module.exports.getBackupServer = function(which) {
     return null;
   }
 }
+
 module.exports.getImagesList = function(which) {
   if (config && config.images && config.images[which]) {
     return config.images[which];
   } else {
     return [];
+  }
+}
+
+function checkDomain(host, config, callback) {
+  if (config.type === 'backend') {
+    repos.ensurePresent(host, config.repo, function(err, localRepoPath) {
+     if (err) {
+       callback(err);
+     } else {
+// starting containers is probably a bad idea here. See also
+// https://github.com/michielbdejong/snickers/issues/17 about (re-)creating containers
+//       backends.ensureStarted(config, localRepoPath, function(err, ipaddr) {
+//         if (err) {
+//           callback(err);
+//         } else {
+           callback(null);
+//         }
+//       });
+      }
+    });
+  } else if (config.type === 'static') {
+    repos.ensurePresent(host, config.repo, function(err, localRepoPath) {
+      if (err) {
+        callback(err);
+      } else {
+        repos.maybePull(host, config.pullFrequency, callback);
+      }
+    });
+  } else {
+    callback('unknown type ' + JSON.stringify(config));
+  }
+}
+function checkDomains(domains, callback) {
+  async.each(Object.keys(domains), function(i, doneThis) {
+    checkDomain(i, domains[i], doneThis);
+  }, callback);
+}
+module.exports.updateConfig = function(confObj) {
+  if (typeof confObj === 'object'
+      && typeof confObj.domains === 'object'
+      && typeof confObj.images === 'object'
+      && Array.isArray(confObj.images.upstream)
+      && Array.isArray(confObj.images.intermediate)
+      && Array.isArray(confObj.images.target)
+      && typeof confObj.backupServers === 'object'
+      && typeof confObj.backupServers.origin === 'string'
+      && typeof confObj.backupServers.secondary === 'string') {
+      
+    backends.rebuildAll(confObj.images, function(err) {
+      if (err) {
+        console.log('error rebuilding images', err);
+      } else {
+        checkDomains(confObj.domains, function() {
+          fs.writeFile('config.json', JSON.stringify(confObj), function(err) {
+            if (err) {
+              console.log('error writing config.json');
+            } else {
+              console.log('wrote config.json');
+            }
+          });
+        });
+      }
+    });
+  } else {
+    console.log('Please format your config.js file like config.js.sample');
   }
 }

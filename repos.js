@@ -8,20 +8,29 @@ var CHECKOUTS_ROOT = '/data/domains/',
 
 var lastPull = {};
 
-module.exports.maybePull = function(domain, interval) {
+module.exports.maybePull = function(domain, interval, callback) {
   var now = new Date().getTime();
   if (!interval) {
     interval = DEFAULT_PULL_INTERVAL;
   }
   if (lastPull[domain] && (now - lastPull[domain] < interval)) {
+    if (callback) {
+      callback();
+    }
     return;
   }
   var repo = new Repo(CHECKOUTS_ROOT + domain);
   repo.exec('pull', function(err, data) {
     if (err) {
       alarm.raise('git pull failed', domain);
+      if (callback) {
+        callback(err);
+      }
     } else {
       lastPull[domain] = now;
+      if (callback) {
+        callback();
+      }
     }
   });
 }

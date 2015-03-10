@@ -6,6 +6,7 @@ var http = require('http'),
     stats = require('./stats');
 
 //...
+configReader.init();
 spdy.start();
 mail.start();
 //dns.start();
