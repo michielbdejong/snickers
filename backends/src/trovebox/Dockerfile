@@ -23,6 +23,7 @@ RUN apt-get update \
 		php-pear \
 		php-apc \
 		postfix \
+		pwgen \
 		wget \
 	&& rm -rf /var/lib/apt/lists/*
 RUN a2enmod rewrite \
