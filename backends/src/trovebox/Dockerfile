@@ -39,10 +39,11 @@ COPY backup.sh /backup.sh
 COPY install-application.sh /install-application.sh
 COPY launch-application.sh /launch-application.sh
 
-COPY apache.conf /etc/apache2/sites-available/openphoto.conf
-RUN sed 's/\/path\/to\/openphoto\/html\/directory/\/data\/www-content\/src\/html/g' /data/www-content/src/configs/openphoto-vhost.conf > /etc/apache2/sites-available/openphoto.conf \
+COPY apache.conf /apache.conf
+RUN sed 's/\/path\/to\/openphoto\/html\/directory/\/data\/www-content\/src\/html/g' apache.conf > /etc/apache2/sites-available/openphoto.conf \
 	&& a2dissite 000-default \
 	&& a2ensite openphoto
+RUN ln -s /etc/php5/mods-available/mcrypt.ini /etc/php5/apache2/conf.d/20-mcrypt.ini
 
 CMD ["/run.sh"]
 EXPOSE 80

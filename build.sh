@@ -1,10 +1,15 @@
+echo building lamp
 cd backends/src/lamp
-tar -cf ../../tar/lamp.tar *
+tar -cvf ../../tar/lamp.tar *
+echo building wordpress
 cd ../../src/wordpress
-tar -cf ../../tar/wordpress.tar *
+tar -cvf ../../tar/wordpress.tar *
+echo building known
 cd ../../src/known
-tar -cf ../../tar/known.tar *
+tar -cvf ../../tar/known.tar *
+echo building trovebox
 cd ../../src/trovebox
-tar -cf ../../tar/trovebox.tar *
+tar -cvf ../../tar/trovebox.tar *
+echo building owncloud
 cd ../../src/owncloud
-tar -cf ../../tar/owncloud.tar *
+tar -cvf ../../tar/owncloud.tar *
