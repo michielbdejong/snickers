@@ -10,5 +10,5 @@ mkdir /data/www-content/src/html/assets/cache
 chown www-data:www-data /data/www-content/src/html/assets/cache
 mkdir /data/www-content/src/html/photos
 chown www-data:www-data /data/www-content/src/html/photos
-cp config.ini `/data/www-content/src/userdata/configs/`hostname`.ini
+cp config.ini /data/www-content/src/userdata/configs/`hostname`.ini
 sed -i "s/##SECRET##/`pwgen 40 1`/g" "s/##EMAIL##/$ADMIN_EMAIL/g" /data/www-content/src/userdata/configs/`hostname`.ini
