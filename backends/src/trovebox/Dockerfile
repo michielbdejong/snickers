@@ -38,7 +38,7 @@ COPY run.sh /run.sh
 COPY backup.sh /backup.sh
 COPY install-application.sh /install-application.sh
 COPY launch-application.sh /launch-application.sh
-
+COPY config.ini /config.ini
 COPY apache.conf /apache.conf
 RUN sed 's/\/path\/to\/openphoto\/html\/directory/\/data\/www-content\/src\/html/g' apache.conf > /etc/apache2/sites-available/openphoto.conf \
 	&& a2dissite 000-default \
