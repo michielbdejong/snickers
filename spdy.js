@@ -77,6 +77,7 @@ function whitelist(servername) {
 
 module.exports.start = function() {
   backends.init(function() {
-    listener.startSpdy(handlerWeb, handlerWs, whitelist);
+    console.log('done initializing backends');
   });
+  listener.startSpdy(handlerWeb, handlerWs, whitelist);
 }
