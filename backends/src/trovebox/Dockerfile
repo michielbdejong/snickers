@@ -21,5 +21,5 @@ RUN a2enmod rewrite \
 	&& mv /etc/php5/apache2/php.ini.tmp /etc/php5/apache2/php.ini
 
 
-COPY install-app.sh /install-app.sh
-COPY launch-app.sh /launch-app.sh
+COPY install-application.sh /install-application.sh
+COPY launch-application.sh /launch-application.sh
