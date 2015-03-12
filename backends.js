@@ -136,18 +136,29 @@ function updateContainerList(callback) {
     checkDone();
   });
 }
-
 function backupContainer(containerName, callback) {
-  docker.getContainer(containerName).exec({ Cmd: 'sh /backup.sh' }, function(err) {
-    console.log('result of sh /backup.sh', err);
-    repos.pushOutBackup(containerName, function(err) {
+  docker.getContainer(containerName).exec({ Cmd: [ 'sh', '/backup.sh' ] }, function(err, exec) {
+    exec.start(function(err, stream) {
       if (err) {
-        console.log('pushed out backup failure!'+err);
+        if (callback) {
+          callback(err);
+        }
       } else {
-        console.log('pushed out backup success!');
-      }
-      if (callback) {
-        callback(err);
+        stream.setEncoding('utf8');
+        stream.pipe(process.stdout);
+        stream.on('end', function() {
+          console.log('done with sh /backup.sh inside the container');
+          repos.pushOutBackup(containerName, function(err) {
+            if (err) {
+              console.log('pushed out backup failure!'+err);
+            } else {
+              console.log('pushed out backup success!');
+            }
+            if (callback) {
+              callback(err);
+            }
+          });
+        });
       }
     });
   });
