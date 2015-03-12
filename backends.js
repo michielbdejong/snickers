@@ -9,7 +9,7 @@ var startedContainers = {},
     stoppingContainerWaiters = {},
     IDLE_CHECK_INTERVAL = 0.1*60000,
     IDLE_LIMIT = 0.1*60000,
-    BACKUP_INTERVAL = 1*60000;
+    BACKUP_INTERVAL = 60*60000;
     REBUILD_INTERVAL = 60*60000;
 
 function createContainer(domain, application, envVars, localDataPath, callback) {
