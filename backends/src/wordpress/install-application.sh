@@ -72,9 +72,13 @@ php /root/wp-cli.phar --path="/data/www-content" --allow-root theme activate sem
 php /root/wp-cli.phar --path="/data/www-content" --allow-root theme install wpsupercache
 php /root/wp-cli.phar --path="/data/www-content" --allow-root theme activate wpsupercache
 
-echo Making  WordPress content folder writable for the webserver...
+echo Making some WordPress folders writable for the webserver...
+touch /data/www-content/.htaccess
 chown -R root:www-data /data/www-content
+chmod 770 /data/www-content/.htaccess
 chmod -R 770 /data/www-content/wp-content
+chmod -R 770 /data/www-content/wp-includes
+chmod -R 770 /data/www-content/wp-admin
 
 echo "user: $ADMIN_USER" > /data/login.txt
 echo "pass: $ADMIN_PASSWORD" >> /data/login.txt
