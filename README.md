@@ -43,12 +43,14 @@ This means migrations are as easy as switching the DNS and hitting the domain on
 Snickers requires Docker 1.3+, nodejs, and the packages it installs when you run `npm install` in the root of this repo. I use screen to
 run `node ./snickers` in a loop (configure the server to restart this screen on startup, in case it reboots).
 
-The only configuration you need to give snickers is the location of its two backup servers. It will store data locally in `/data`, by default.
+You need to give snickers the location of its two backup servers, otherwise it will refuse to run. I believe it's good practice to have one backup server under my control, and one under the control of a trusted buddy-hoster / wing-man (in my case @pierreozoux).
+
+It will store data locally in `/data`, and in `/etc/letsencrypt`.
 
 Copy `config.js.sample` to `config.js` and put in the two git servers to use for backups. Make sure these are private git servers, but
 that the user as which you run snickers does have access to them.
 
-Now run `node config.js` to generate `config.json`, which Snicker will load in once every minute.
+Now configure at least one domain, and run `node config.js` to generate `config.json`, which Snicker will load in once every minute.
 
 To add a domain, it's not necessary to restart snickers. Just make sure it exists on the backup servers, add it in config.js,
 run `node config`, and within the next 60 seconds, snickers will have picked it up and started the deploy.
@@ -62,20 +64,23 @@ finds it.
 It's probably a good idea to save your config.js and/or config.json to a private git repo, and if you use StartSSL or other
 hand-registered certs, you may want to do the same with /etc/letsencrypt.
 
-Snickers distinguishes between the following states of a domain:
+Snickers distinguishes states of a domain based on the following questions:
 
-* Fresh: exists only in the config and on the backup servers
-* Checked out: repo has been checked out locally but is still empty
-* Installed: repo has been checked out locally and contains data
+* Has the repo been checked out locally? If not, it will do a git clone from the backup server.
+* Is this a static site or do we need to run a container for it? If it's static, the content will be served straight up. -> done.
+* So we need to run a container. Is the image available? If not, it will be build from `backends/tar/<image>.tar` (see `backends/src/`).
+* Does a container exist? If not, one will be created.
+* Is the container started? If not, it will be started.
+* Does the repo contain data? If not, it will run `/install-application.sh` inside the container.
+* Has the application been launched (has dump.sql been loaded into MySQL)? If not, the application is launched.
+* Is something listening on port 80 of the container yet? If not, we wait a little bit.
+* Now the request can be proxied to the backend!
 
-and the following states of a container:
+Starting a stopped container on-the-fly like this takes about 200ms, so it's perfectly acceptable to stop containers that are idle
+for a few minutes. This saves a lot of RAM usage on the server, especially if you host a lot of dormant domains. This is ideal for
+giving users 50 different applications to try out. They may use some of them only once a year, but that's perfectly fine.
 
-* Built: the image for it exists
-* Created: the container for it exists
-* Started: the container is started
-* Launched: where needed the data from the repo is loaded into the non-mounted parts of the container (db loaded from dump, etc)
-
-If you migrate a domain from one server to another (by updating the config of the receiving server and pointing DNS),
+if you migrate a domain from one server to another (by updating the config of the receiving server and pointing dns),
 then it will be in fresh state until the first http request for it comes in, and then it will automatically bring the domain to
 checked-out state, then the container to started state, then since it detects that data is already there, it will go right ahead
 and launch the application.
