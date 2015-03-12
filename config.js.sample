@@ -1,27 +1,33 @@
 //Simple tool to write config.json:
 require('./config-reader').updateConfig({
   domains: {
-    'example.com': {
+    'test.com': {
       type: 'backend', //see 'backends/' folder in this repo
       application: 'known',
       otherEmail: 'user@gmail.com',
       backendEnv: {
+        ADMIN_USER: 'freddie',
+        TITLE: 'TestSite',
+        ADMIN_EMAIL: 'user@gmail.com'
       }
     },
+    'www.test.com': { type: 'redirect', redirectHost: 'test.com' },
+
     'example2.com': {
       type: 'static-pull',
       repo: 'https://github.com/michielbdejong/website',
       folder: 'public/',
       otherEmail: 'user@gmail.com'
-    }
+    },
+    'www.example2.com': { type: 'redirect', redirectHost: 'example2.com' }
   },
   backupServerPaths: {
     origin: 'git@backmeup.com:',
     secondary: 'ssh://me@atlanta.biz:422/home/me/'
   },
   images: {
-    upstream: ['ubuntu', 'debian:jessie'],
+    upstream: ['debian:jessie', 'ubuntu'],//trovebox is currently based on ubuntu, and lamp on debian:jessie
     intermediate: [ 'lamp' ],
-    target: ['wordpress', 'known', 'owncloud', 'trovebox']//here you can disable the ones you don't use
+    target: ['wordpress', 'trovebox', 'owncloud', 'known']//here you can disable the ones you don't use
   }
 });

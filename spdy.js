@@ -27,7 +27,7 @@ function handlerWebBackend(host, config, req, res) {
   });
 }
 
-function handlerWebStatic(host, config, req, res)
+function handlerWebStatic(host, config, req, res) {
   repos.ensurePresent(host, config.repo, function(err, localRepoPath) {
     if (err) {
       res.writeHead(500);
@@ -55,7 +55,7 @@ function handlerWeb(req, res) {
          res.writeHead(301, {
            Location: 'https://' + config.redirectHost + req.url
          });
-         res.end('Location: https://' + redirectHost + req.url);
+         res.end('Location: https://' + config.redirectHost + req.url);
        } else {
          res.writeHead(404);
          res.end('Snickers says: That site is not configured on this server.');
@@ -64,7 +64,7 @@ function handlerWeb(req, res) {
     } else {
       res.writeHead(301, {
         Location: 'https://' + host.toLowerCase() + req.url
-      }
+      });
       req.end('Please specify the host header in lower case');
     }
   } else {
