@@ -3,7 +3,8 @@ var backends = require('./backends'),
     listener = require('./listener'),
     configReader = require('./config-reader'),
     statics = require('./statics'),
-    repos = require('./repos');
+    repos = require('./repos'),
+    stats = require('./stats');
 
 function handlerWeb(req, res) {
   var config = configReader.getConfig(req.headers.host);
@@ -38,6 +39,12 @@ function handlerWeb(req, res) {
         repos.maybePull(req.headers.host, config.pullFrequency);
       }
     });
+  } else if (config.type === 'redirect') {
+    res.writeHead(302, {
+      Location: 'https://' + config.redirectHost + req.url
+    });
+    res.end('Location: https://' + redirectHost + req.url);
+    stats.inc(req.headers.host);
   } else {
     res.writeHead(404);
     res.end('Snickers says: That site is not configured on this server.');

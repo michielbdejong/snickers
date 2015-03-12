@@ -86,6 +86,12 @@ function checkDomain(host, config, callback) {
         repos.maybePull(host, config.pullFrequency, callback);
       }
     });
+  } else if (config.type === 'redirect') {
+    if (typeof config.redirectHost === 'string') {
+      callback(null);
+    } else {
+      callback('no redirectHost for redirect domain' + JSON.stringify(config));
+    }
   } else {
     callback('unknown type ' + JSON.stringify(config));
   }
