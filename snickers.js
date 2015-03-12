@@ -12,14 +12,22 @@ mail.start();
 //dns.start();
 
 http.createServer(function(req, res) {
-  var config = configReader.getConfig(req.headers.host),
-      redirectHost = req.headers.host;
-  if (config.redirectHost) {
-    redirectHost = config.redirectHost;
+  var host, config, redirectHost;
+  host = req.headers.host;
+  if (typeof host === 'string') {
+    host = host.toLowerCase();
+    config = configReader.getConfig(host);
+    redirectHost = host;
+    if (config.redirectHost) {
+      redirectHost = config.redirectHost;
+    }
+    res.writeHead(301, {
+      Location: 'https://' + redirectHost + req.url
+    });
+    res.end('Location: https://' + redirectHost + req.url);
+    stats.inc(host);
+  } else {
+    res.writeHead(406);
+    res.end('Cannot serve http request without host header');
   }
-  res.writeHead(302, {
-    Location: 'https://' + redirectHost + req.url
-  });
-  res.end('Location: https://' + redirectHost + req.url);
-  stats.inc(req.headers.host);
 }).listen(80);
