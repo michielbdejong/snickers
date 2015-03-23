@@ -85,7 +85,7 @@ function handlerWsBackend(host, config, req, socket, head) {
          console.log('Error starting site, closing socket', host);
          socket.close();
        } else {
-         console.log('Proxying ' + containerName + ' to ws://' + ipaddr);
+         console.log('Proxying ' + host + ' to ws://' + ipaddr);
          req.headers['X-Forwarded-Proto'] = 'https';
          dispatcher.proxyWsTo(req, socket, head, ipaddr, config.port);
        }
