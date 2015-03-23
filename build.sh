@@ -13,3 +13,9 @@ tar -cvf ../../tar/trovebox.tar *
 echo building owncloud
 cd ../../src/owncloud
 tar -cvf ../../tar/owncloud.tar *
+echo building tosdr2-pre
+cd ../../src/tosdr2-pre
+tar -cvf ../../tar/tosdr2-pre.tar *
+echo building tosdr2-dev
+cd ../../src/tosdr2-dev
+tar -cvf ../../tar/tosdr2-dev.tar *
