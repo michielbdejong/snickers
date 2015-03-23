@@ -43,14 +43,56 @@ This means migrations are as easy as switching the DNS and hitting the domain on
 Snickers requires Docker 1.3+, nodejs, and the packages it installs when you run `npm install` in the root of this repo. I use screen to
 run `node ./snickers` in a loop (configure the server to restart this screen on startup, in case it reboots).
 
+For instance on a Ubuntu 14.10-x64 (2 CPUs, 2Gb RAM, 40Gb disk, from [Vultr](https://www.vultr.com/pricing/)), run:
+
+````bash
+apt-get update && apt-get upgrade
+apt-get -y install git nodejs npm nodejs-legacy
+
+dpkg-reconfigure -plow unattended-upgrades
+# set unattended upgrades to 'Yes'
+
+ssh-keygen -t rsa
+# select all the defaults by hitting <enter> repeatedly
+
+# Install Docker:
+curl -sSL https://get.docker.com/ | sh
+
+# Install docker-enter ([recommended](https://github.com/jpetazzo/nsenter#nsenter-in-a-can)):
+# This also tests your server (there should be no 'could not resolve' errors).
+docker run --rm -v /usr/local/bin:/target jpetazzo/nsenter
+
+cd /root
+git clone https://github.com/michielbdejong/snickers
+cd /root/snickers/
+npm install
+cp config.js.sample config.js
+````
+
 You need to give snickers the location of its two backup servers, otherwise it will refuse to run. I believe it's good practice to have one backup server under my control, and one under the control of a trusted buddy-hoster / wing-man (in my case @pierreozoux).
 
 It will store data locally in `/data`, and in `/etc/letsencrypt`.
 
-Copy `config.js.sample` to `config.js` and put in the two git servers to use for backups. Make sure these are private git servers, but
-that the user as which you run snickers does have access to them.
+Add your backupservers to /etc/hosts if needed, edit config.js to configure the domains you are going to host
+(comment out the images you will not use, so they don't need to be downloaded),
+add you ssh key from /root/.ssh/id_rsa.pub to both backup servers, set the hostname if you want, and then for
+each domain you are going to host, add an empty git repo to each backup server, by ssh-ing in as the backup user
+and running:
 
-Now configure at least one domain, and run `node config.js` to generate `config.json`, which Snicker will load in once every minute.
+````bash
+mkdir mydomain.com && cd mydomain.com && git init --bare && cd ..
+````
+
+Back on the snickers server, you can now run:
+
+````bash
+cd /root/snickers
+node config
+npm install -g forever
+forever start snickers.js
+````
+
+Each time you configure a new domain, run `node config.js` to generate `config.json`, which Snicker will load in once every minute.
 
 To add a domain, it's not necessary to restart snickers. Just make sure it exists on the backup servers, add it in config.js,
 run `node config`, and within the next 60 seconds, snickers will have picked it up and started the deploy.

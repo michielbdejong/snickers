@@ -26,8 +26,23 @@ require('./config-reader').updateConfig({
     secondary: 'ssh://me@atlanta.biz:422/home/me/'
   },
   images: {
-    upstream: ['debian:jessie', 'ubuntu', 'node', 'cozy/full'],//trovebox is currently based on ubuntu, and lamp on debian:jessie
-    intermediate: [ 'lamp', 'tosdr2:pre' ],
-    target: ['wordpress', 'trovebox', 'owncloud', 'known', 'tosdr-dev', 'cozy']//here you can disable the ones you don't use
+    upstream: [
+      'debian:jessie' /* for lamp */,
+      'ubuntu' /* for trovebox */,
+      'node' /* for tosdr2:pre */,
+      'cozy/full' /* for cozy */
+    ],
+    intermediate: [
+      'lamp' /* for wordpress, owncloud, and known */,
+      'tosdr2:pre' /* for tosdr2:dev */
+    ],
+    target: [ //here and above you can disable the ones you don't use
+      'wordpress',
+      'trovebox',
+      'owncloud',
+      'known',
+      'tosdr-dev',
+      'cozy'
+    ]
   }
 });
