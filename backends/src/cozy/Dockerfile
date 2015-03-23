@@ -1,3 +1,3 @@
 FROM cozy/full
 
-COPY nginx.conf /etc/nginx/cozy.conf
+COPY nginx.conf /etc/nginx/sites-available/cozy.conf
