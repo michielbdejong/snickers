@@ -19,3 +19,6 @@ tar -cvf ../../tar/tosdr2-pre.tar *
 echo building tosdr2-dev
 cd ../../src/tosdr2-dev
 tar -cvf ../../tar/tosdr2-dev.tar *
+echo building cozy
+cd ../../src/cozy
+tar -cvf ../../tar/cozy.tar *
