@@ -26,8 +26,8 @@ php /root/wp-cli.phar --path="/data/www-content" --allow-root db create
 php /root/wp-cli.phar --path="/data/www-content" --allow-root core install \
 	--url="$URL" --title="$TITLE" --admin_user="$ADMIN_USER" --admin_password="$ADMIN_PASSWORD" --admin_email="$ADMIN_EMAIL"
 echo "define(\"FS_METHOD\",\"direct\");" >> /data/www-content/wp-config.php
-echo "define(\"FS_CHMOD_DIR\", \"0777\");" >> /data/www-content/wp-config.php
-echo "define(\"FS_CHMOD_FILE\", \"0777\");" >> /data/www-content/wp-config.php
+echo "define(\"FS_CHMOD_DIR\", 0770);" >> /data/www-content/wp-config.php
+echo "define(\"FS_CHMOD_FILE\", 0660);" >> /data/www-content/wp-config.php
 
 #TODO: Debug if/why this is necessary:
 php /root/wp-cli.phar --path="/data/www-content" --allow-root user update $ADMIN_USER --user_pass="$ADMIN_PASSWORD" 
