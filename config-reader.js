@@ -105,6 +105,11 @@ function checkDomains(domains, defaultBackupServerPath, callback) {
     checkDomain(i, thisConf, doneThis);
   }, callback);
 }
+
+module.exports.getBackendTarPath(application) {
+  return '../snickers-applications/tar/' + application + '.tar';
+};
+
 module.exports.updateConfig = function(confObj) {
   if (typeof confObj === 'object'
       && typeof confObj.domains === 'object'
