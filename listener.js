@@ -5,7 +5,7 @@
 
 var fs = require('fs'),
     mkdirp = require('mkdirp'),
-    acme = require('./node-acme/acme'),
+    acme = require('node-letsencrypt'),
     spdy = require('spdy'),
     crypto = require('crypto');
 
