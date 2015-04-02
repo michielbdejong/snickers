@@ -11,6 +11,7 @@ var startedContainers = {},
     IDLE_LIMIT = 0.1*60000,
     BACKUP_INTERVAL = 60*60000;
     REBUILD_INTERVAL = 60*60000;
+    MEM_LIMIT_BYTES = 300 * 1024 * 1024;
 
 function createContainer(domain, application, envVars, localDataPath, callback) {
   docker.buildImage('./backends/tar/' + application + '.tar', {t: application}, function(err, stream) {
@@ -25,6 +26,8 @@ function createContainer(domain, application, envVars, localDataPath, callback) 
         Image: application,
         name: domain,
         Hostname: domain,
+        Memory: MEM_LIMIT_BYTES,
+        MemorySwap: -1,
         Env: envVarArr
       };
       mkdirp(localDataPath+'/'+application, function(err) {
