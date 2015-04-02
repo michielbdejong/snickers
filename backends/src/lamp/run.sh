@@ -1,6 +1,6 @@
 #!/bin/bash
 
-exec mysqld_safe &
+service mysql start
 
 for i in `seq 1 10`; do
     DB_CONNECTABLE=$(mysql -e 'status' >/dev/null 2>&1; echo "$?");
