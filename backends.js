@@ -3,15 +3,14 @@ var Docker = require('dockerode'),
     async = require('async'),
     configReader = require('./config-reader'),
     mkdirp = require('mkdirp'),
-    repos = require('./repos');
+    repos = require('./repos'),
+    memUsage = require('./memusage');
 
 var startedContainers = {},
     stoppingContainerWaiters = {},
-    IDLE_CHECK_INTERVAL = 0.1*60000,
-    IDLE_LIMIT = 0.1*60000,
-    BACKUP_INTERVAL = 60*60000;
-    REBUILD_INTERVAL = 60*60000;
-    MEM_LIMIT_BYTES = 300 * 1024 * 1024;
+    MEM_CHECK_INTERVAL = 0.1*60000,
+    MIN_FREE_MEM_BYTES = 500 * 1024 * 1024,
+    CONTAINER_MEM_LIMIT_BYTES = 300 * 1024 * 1024;
 
 function createContainer(domain, application, envVars, localDataPath, callback) {
   docker.buildImage('./backends/tar/' + application + '.tar', {t: application}, function(err, stream) {
@@ -26,7 +25,7 @@ function createContainer(domain, application, envVars, localDataPath, callback) 
         Image: application,
         name: domain,
         Hostname: domain,
-        Memory: MEM_LIMIT_BYTES,
+        Memory: CONTAINER_MEM_LIMIT_BYTES,
         MemorySwap: -1,
         Env: envVarArr
       };
@@ -202,14 +201,33 @@ function stopContainer(containerName) {
   });
 }
 
-function checkIdle() {
+function checkMem() {
   updateContainerList(function() {
-    var thresholdTime = new Date().getTime() - IDLE_LIMIT;
-    for (var i in startedContainers) {
-      if (startedContainers[i].lastAccessed < thresholdTime) {
-        stopContainer(i);
+    memUsage.getMemUsage(function(err, data) {
+      if (err) {
+        console.log('error checking memory usage', err);
+      } else {
+        if (data < MIN_FREE_MEM_BYTES) {
+          console.log('To little free memory, shutting down some containers', data, MIN_FREE_MEM_BYTES);
+          var oldestOne, oldestTime = Infinity;
+          for (var i in startedContainers) {
+            if (startedContainers[i].lastAccessed < oldestTime) {
+              oldestOne = i;
+            }
+          }
+          stopContainer(oldestOne, function(err, data) {
+            if (err) {
+              console.log('error stopping container', oldestOne, err);
+            } else {
+              console.log('Shut down one container, repeating mem check now.');
+              checkMem();
+            }
+          });
+        } else {
+          console.log('Free memory is within established parameters', data, MIN_FREE_MEM_BYTES);
+        }
       }
-    }
+    });
   });
 }
 
@@ -264,17 +282,7 @@ module.exports.init = function(callback) {
   //the intermediates that need them.
   //target images will be built when needed to create a container.
   buildImages(configReader.getImagesList('intermediate'), function() {
-    setInterval(checkIdle, IDLE_CHECK_INTERVAL);
-    setInterval(function() {
-      updateContainerList(function() {
-        for (var containerName in startedContainers) {
-          backupContainer(containerName);
-        }
-      });
-    }, BACKUP_INTERVAL);
-    //every hour, check if there were any changes in the upstream containers, and if so
-    //rebuild all intermediates and targets
-    setInterval(rebuildAll, REBUILD_INTERVAL);
+    setInterval(checkMem, MEM_CHECK_INTERVAL);
     
     updateContainerList(callback);
     buildImages(configReader.getImagesList('target'), function() {
