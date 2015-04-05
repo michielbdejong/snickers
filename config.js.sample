@@ -14,7 +14,7 @@ require('./config-reader').updateConfig({
     'www.test.com': { type: 'redirect', redirectHost: 'test.com' },
 
     'example2.com': {
-      type: 'static-pull',
+      type: 'static',
       repo: 'https://github.com/michielbdejong/website',
       folder: 'public/',
       otherEmail: 'user@gmail.com'
