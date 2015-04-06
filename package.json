@@ -11,7 +11,7 @@
     "native-dns": "*",
     "mkdirp": "*",
     "async": "*",
-    "node-forge": "0.6.20"
+    "snitch": "*"
   },
   "main": "snickers.js"
 }
