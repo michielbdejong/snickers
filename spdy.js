@@ -3,41 +3,26 @@ var backends = require('./backends'),
     listener = require('./listener'),
     configReader = require('./config-reader'),
     statics = require('./statics'),
-    repos = require('./repos'),
     stats = require('./stats');
 
 function handlerWebBackend(host, config, req, res) {
-  repos.ensurePresent(host, config.repo, function(err, localRepoPath) {
+  var localDataPath = '/data/domains/' + host;
+  backends.ensureStarted(host, localDataPath, function(err, ipaddr) {
     if (err) {
       res.writeHead(500);
-      console.log('Error fetching data repo for ' + host + ' - ' + JSON.stringify(err));
-      res.end('Snickers says: Error fetching data repo for ' + host + ' - see stdout logs for details');
+      res.end('Error starting ' + config.application + ' for ' + host + ' - ' + JSON.stringify(err));
     } else {
-      backends.ensureStarted(host, localRepoPath, function(err, ipaddr) {
-        if (err) {
-          res.writeHead(500);
-          res.end('Error starting ' + config.application + ' for ' + host + ' - ' + JSON.stringify(err));
-        } else {
-          console.log('Proxying ' + host + ' to http://' + ipaddr);
-          req.headers['X-Forwarded-Proto'] = 'https';
-          dispatcher.proxyTo(req, res, ipaddr, config.port);
-        }
-      });
+      console.log('Proxying ' + host + ' to http://' + ipaddr);
+      req.headers['X-Forwarded-Proto'] = 'https';
+      dispatcher.proxyTo(req, res, ipaddr, config.port);
     }
   });
+  
+  
 }
 
 function handlerWebStatic(host, config, req, res) {
-  repos.ensurePresent(host, config.repo, function(err, localRepoPath) {
-    if (err) {
-      res.writeHead(500);
-      console.log('Error fetching statics repo for ' + host + ' - ' + JSON.stringify(err));
-      res.end('Snickers says: Error fetching statics repo for ' + host + ' - see stdout logs for details');
-    } else {
-      statics.serveStatic(localRepoPath + (config.folder ? '/' + config.folder : ''), req, res);
-      repos.maybePull(host, config.pullFrequency);
-    }
-  });
+  statics.serveStatic('/data/domains/' + host + (config.folder ? '/' + config.folder : ''), req, res);
 }
 
 
@@ -74,22 +59,15 @@ function handlerWeb(req, res) {
 }
 
 function handlerWsBackend(host, config, req, socket, head) {
-  repos.ensurePresent(host, config.repo, function(err, localRepoPath) {
+  var localDataPath = '/data/domains/' + host;
+  backends.ensureStarted(host, localDataPath, function(err, ipaddr) {
     if (err) {
-      res.writeHead(500);
-      console.log('Error fetching data repo for ' + host + ' - ' + JSON.stringify(err));
-      res.end('Snickers says: Error fetching data repo for ' + host + ' - see stdout logs for details');
+      console.log('Error starting site, closing socket', host);
+      socket.close();
     } else {
-     backends.ensureStarted(host, localRepoPath, function(err, ipaddr) {
-       if (err) {
-         console.log('Error starting site, closing socket', host);
-         socket.close();
-       } else {
-         console.log('Proxying ' + host + ' to ws://' + ipaddr);
-         req.headers['X-Forwarded-Proto'] = 'https';
-         dispatcher.proxyWsTo(req, socket, head, ipaddr, config.port);
-       }
-     });
+      console.log('Proxying ' + host + ' to ws://' + ipaddr);
+      req.headers['X-Forwarded-Proto'] = 'https';
+      dispatcher.proxyWsTo(req, socket, head, ipaddr, config.port);
     }
   });
 }

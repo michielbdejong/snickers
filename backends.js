@@ -2,8 +2,7 @@ var Docker = require('dockerode'),
     docker = new Docker(),
     async = require('async'),
     configReader = require('./config-reader'),
-    mkdirp = require('mkdirp'),
-    repos = require('./repos');
+    mkdirp = require('mkdirp');
 
 var startedContainers = {},
     stoppingContainerWaiters = {},
@@ -151,16 +150,9 @@ function backupContainer(containerName, callback) {
         stream.pipe(process.stdout);
         stream.on('end', function() {
           console.log('done with sh /backup.sh inside the container');
-          repos.pushOutBackup(containerName, function(err) {
-            if (err) {
-              console.log('pushed out backup failure!'+err);
-            } else {
-              console.log('pushed out backup success!');
-            }
-            if (callback) {
-              callback(err);
-            }
-          });
+          if (callback) {
+            callback(null);
+          }
         });
       }
     });
