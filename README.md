@@ -89,14 +89,10 @@ Back on the snickers server, you can now run:
 mkdir /etc/letsencrypt
 cd /root/snickers
 node config
-npm install -g forever
-forever start snickers.js
-crontab -u root -e
-# add this line:
-#@reboot cd /root/snickers && /usr/local/bin/forever start snickers.js
-shutdown -r now #just to test
-forever list
-tail -f /root/.forever/*.log
+npm install -g pm2
+pm2 start snickers.js
+pm2 startup
+pm2 list
 ````
 
 Each time you configure a new domain, run `node config.js` to generate `config.json`, which Snicker will load in once every minute.
