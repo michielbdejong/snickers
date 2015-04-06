@@ -114,7 +114,7 @@ Snickers distinguishes states of a domain based on the following questions:
 
 * Has the repo been checked out locally? If not, it will do a git clone from the backup server.
 * Is this a static site or do we need to run a container for it? If it's static, the content will be served straight up. -> done.
-* So we need to run a container. Is the image available? If not, it will be build from `backends/tar/<image>.tar` (see `backends/src/`).
+* So we need to run a container. Is the image available? If not, it will be build from `../snickers-applications/tar/<image>.tar` (see [gh:michielbdejong/snickers-applications](https://github.com/michielbdejong/snickers-applications)).
 * Does a container exist? If not, one will be created.
 * Is the container started? If not, it will be started.
 * Does the repo contain data? If not, it will run `/install-application.sh` inside the container.
