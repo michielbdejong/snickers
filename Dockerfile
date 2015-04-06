@@ -5,4 +5,4 @@ RUN cd /app && npm install
 
 EXPOSE 80
 EXPOSE 443
-CMD cd /app && node ploxy
+CMD cd /app && node snickers
