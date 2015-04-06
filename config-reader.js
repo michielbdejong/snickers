@@ -106,7 +106,7 @@ function checkDomains(domains, defaultBackupServerPath, callback) {
   }, callback);
 }
 
-module.exports.getBackendTarPath(application) {
+module.exports.getBackendTarPath = function(application) {
   return '../snickers-applications/tar/' + application + '.tar';
 };
 
