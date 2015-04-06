@@ -4,7 +4,7 @@
 //them from there for the rest of the deployed server's lifetime.
 
 var spdy = require('spdy'),
-    Snitch = require('snitch');
+    Snitch = require('node-snitch');
 
 function startSpdy(handlerWeb, handlerWs, whitelist) {
   var snitch = new Snitch.Store('/etc/snitch', 10 * 60 * 1000, function(err) {
