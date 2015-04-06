@@ -67,10 +67,14 @@ git clone https://github.com/michielbdejong/snickers-proxy
 git clone https://github.com/michielbdejong/snickers-applications
 cd /root/snickers-proxy
 npm install
-cp config.js.sample config.js
 ````
 
-You need to give snickers the location of its two backup servers, otherwise it will refuse to run. I believe it's good practice to have one backup server under my control, and one under the control of a trusted buddy-hoster / wing-man (in my case @pierreozoux).
+Now you need to set up some services on this server for snickers to proxy to. They need to be specified in config.json and they need
+to exist as stopped containers.
+
+I use [coyote](https://github.com/michielbdejong/coyote) for this.
+
+You need to give coyote the location of its two backup servers, otherwise it will refuse to run. I believe it's good practice to have one backup server under my control, and one under the control of a trusted buddy-hoster / wing-man (in my case @pierreozoux).
 
 It will store data locally in `/data`, and in `/etc/letsencrypt`.
 
