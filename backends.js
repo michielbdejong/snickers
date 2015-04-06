@@ -14,7 +14,7 @@ var startedContainers = {},
     MEM_LIMIT_BYTES = 300 * 1024 * 1024;
 
 function createContainer(domain, application, envVars, localDataPath, callback) {
-  docker.buildImage('./backends/tar/' + application + '.tar', {t: application}, function(err, stream) {
+  docker.buildImage(configReader.getBackendTarPath(application), {t: application}, function(err, stream) {
     console.log('build err', err);
     stream.pipe(process.stdout);
     stream.on('end', function() {
@@ -229,7 +229,7 @@ function buildImages(list, callback) {
   console.log('image list', list);
   async.eachSeries(list, function(tag, doneThis) {
     console.log('tag', tag);
-    docker.buildImage('./backends/tar/' + tag + '.tar',
+    docker.buildImage(configReader.getBackendTarPath(tag),
         {t: tag},
         function(err, stream) {
       if (err) {

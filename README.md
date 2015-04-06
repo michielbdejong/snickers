@@ -63,8 +63,9 @@ curl -sSL https://get.docker.com/ | sh
 docker run --rm -v /usr/local/bin:/target jpetazzo/nsenter
 
 cd /root
-git clone https://github.com/michielbdejong/snickers
-cd /root/snickers/
+git clone https://github.com/michielbdejong/snickers-proxy
+git clone https://github.com/michielbdejong/snickers-applications
+cd /root/snickers-proxy
 npm install
 cp config.js.sample config.js
 ````
@@ -87,7 +88,7 @@ Back on the snickers server, you can now run:
 
 ````bash
 mkdir /etc/letsencrypt
-cd /root/snickers
+cd /root/snickers-proxy
 node config
 npm install -g pm2
 pm2 start snickers.js
