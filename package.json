@@ -3,7 +3,7 @@
   "repository": "https://github.com/michielbdejong/snickers",
   "version": "0.0.0",
   "dependencies": {
-    "dockerode": "*",
+    "docker-activator": "*",
     "spdy": "*",
     "http-proxy": "*",
     "node-static": "*",

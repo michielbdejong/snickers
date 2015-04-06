@@ -1,4 +1,4 @@
-var backends = require('./backends'),
+var dockerActivator = require('docker-activator'),
     dispatcher = require('./dispatcher'),
     listener = require('./listener'),
     configReader = require('./config-reader'),
@@ -7,7 +7,7 @@ var backends = require('./backends'),
 
 function handlerWebBackend(host, config, req, res) {
   var localDataPath = '/data/domains/' + host;
-  backends.ensureStarted(host, localDataPath, function(err, ipaddr) {
+  dockerActivator.ensureStarted(host, localDataPath, function(err, ipaddr) {
     if (err) {
       res.writeHead(500);
       res.end('Error starting ' + config.application + ' for ' + host + ' - ' + JSON.stringify(err));
@@ -60,7 +60,7 @@ function handlerWeb(req, res) {
 
 function handlerWsBackend(host, config, req, socket, head) {
   var localDataPath = '/data/domains/' + host;
-  backends.ensureStarted(host, localDataPath, function(err, ipaddr) {
+  dockerActivator.ensureStarted(host, localDataPath, function(err, ipaddr) {
     if (err) {
       console.log('Error starting site, closing socket', host);
       socket.close();
@@ -96,8 +96,8 @@ function whitelist(servername) {
 }
 
 module.exports.start = function() {
-  backends.init(function() {
-    console.log('done initializing backends');
+  dockerActivator.init(function() {
+    console.log('done initializing dockerActivator');
   });
   listener.startSpdy(handlerWeb, handlerWs, whitelist);
 }
