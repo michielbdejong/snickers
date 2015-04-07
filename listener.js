@@ -13,7 +13,9 @@ function startSpdy(handlerWeb, handlerWs, whitelist) {
   var server = spdy.createServer({
     key: Snitch.DEFAULT_KEY,
     cert: Snitch.DEFAULT_CERT,
-    SNICallback: snitch.getContext,
+    SNICallback: function(servername) {
+      return snitch.getContext(servername);
+    }
   }, function(req, res) {
     if (snitch.handleChallenge(req, res)) {
       //challenge handled
