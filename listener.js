@@ -9,7 +9,7 @@ var spdy = require('spdy'),
 function startSpdy(handlerWeb, handlerWs, whitelist) {
   var snitch = new Snitch.Store('/etc/snitch', 10 * 60 * 1000, function(err) {
     console.log('snitch error occurred', err);
-  });
+  }, whitelist);
   var server = spdy.createServer({
     key: Snitch.DEFAULT_KEY,
     cert: Snitch.DEFAULT_CERT,
