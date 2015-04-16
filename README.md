@@ -93,6 +93,7 @@ Back on the snickers server, you can now run:
 ````bash
 mkdir /etc/letsencrypt
 cd /root/snickers-proxy
+cp config.json-sample config.json
 npm install -g pm2
 sudo su
 pm2 start snickers.js
