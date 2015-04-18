@@ -91,7 +91,7 @@ mkdir mydomain.com && cd mydomain.com && git init --bare && cd ..
 Back on the snickers server, you can now run:
 
 ````bash
-mkdir /etc/letsencrypt
+mkdir /etc/snitch
 cd /root/snickers-proxy
 cp config.json-sample config.json
 npm install -g pm2
