@@ -74,21 +74,7 @@ to exist as stopped containers.
 
 I use [coyote](https://github.com/michielbdejong/coyote) for this.
 
-You need to give coyote the location of its two backup servers, otherwise it will refuse to run. I believe it's good practice to have one backup server under my control, and one under the control of a trusted buddy-hoster / wing-man (in my case @pierreozoux).
-
-It will store data locally in `/data`, and in `/etc/snitch`.
-
-Add your backupservers to /etc/hosts if needed, edit config.js to configure the domains you are going to host
-(comment out the images you will not use, so they don't need to be downloaded),
-add you ssh key from /root/.ssh/id_rsa.pub to both backup servers, set the hostname if you want, and then for
-each domain you are going to host, add an empty git repo to each backup server, by ssh-ing in as the backup user
-and running:
-
-````bash
-mkdir mydomain.com && cd mydomain.com && git init --bare && cd ..
-````
-
-Back on the snickers server, you can now run:
+It will store data locally in `/data`, and in `/etc/snitch`. Run:
 
 ````bash
 mkdir /etc/snitch
@@ -101,19 +87,19 @@ pm2 startup
 pm2 list
 ````
 
-Each time you configure a new domain, run `node config.js` to generate `config.json`, which Snicker will load in once every minute.
+Each time you configure a new domain, update `config.json`, which Snicker will load in once every minute.
 
-To add a domain, it's not necessary to restart snickers. Just make sure it exists on the backup servers, add it in config.js,
-run `node config`, and within the next 60 seconds, snickers will have picked it up and started the deploy.
+To add a domain, it's not necessary to restart snickers. Just make sure it exists under `/data/domains`, add it in config.json,
+and within the next 60 seconds, snickers will have picked it up and started the deploy.
 
 By default, a LetsEncrypt cert will be used. To install a different TLS certificate (for instance from StartSSL),
-concatenate the public cert into `/etc/letsencrypt/<example.com>/cert.pem`, the private key into
-`/etc/letsencrypt/<example.com>/key.pem`, and the chain cert (if any) into
-`/etc/letsencrypt/<example.com>/ca.pem`. Snickers will scan this folder every 10 minutes, and start using the new cert when it
+concatenate the public cert into `/etc/snitch/<example.com>/cert.pem`, the private key into
+`/etc/snitch/<example.com>/key.pem`, and the chain cert (if any) into
+`/etc/snitch/<example.com>/ca.pem`. Snickers will scan this folder every 10 minutes, and start using the new cert when it
 finds it.
 
-It's probably a good idea to save your config.js and/or config.json to a private git repo, and if you use StartSSL or other
-hand-registered certs, you may want to do the same with /etc/letsencrypt.
+It's probably a good idea to save your config.json to a private git repo, and if you use StartSSL or other
+hand-registered certs, you may want to do the same with /etc/snitch.
 
 Snickers distinguishes states of a domain based on the following questions:
 
