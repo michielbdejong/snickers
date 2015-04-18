@@ -76,7 +76,7 @@ I use [coyote](https://github.com/michielbdejong/coyote) for this.
 
 You need to give coyote the location of its two backup servers, otherwise it will refuse to run. I believe it's good practice to have one backup server under my control, and one under the control of a trusted buddy-hoster / wing-man (in my case @pierreozoux).
 
-It will store data locally in `/data`, and in `/etc/letsencrypt`.
+It will store data locally in `/data`, and in `/etc/snitch`.
 
 Add your backupservers to /etc/hosts if needed, edit config.js to configure the domains you are going to host
 (comment out the images you will not use, so they don't need to be downloaded),
