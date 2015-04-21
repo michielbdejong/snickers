@@ -1,6 +1,12 @@
 var fs = require('fs'),
     mkdirp = require('mkdirp');
 
+module.exports.debug = function() {
+  for (var i=0; i<arguments.length; i++) {
+    console.log(arguments[i]);
+  }
+};
+
 module.exports.raise = function(str) {
   mkdirp('/data/alarm', function(err) {
     if (err) {

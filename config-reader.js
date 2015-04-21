@@ -1,28 +1,35 @@
-var fs = require('fs');
+//TODO: make this a class instead of a singleton
+var fs = require('fs'),
+    alarm = require('./alarm');
 
 var CONFIG_LOAD_INTERVAL = 60*1000;
 
-var config;
+var config, timer;
 
-function loadConfig(sync) {
+function loadConfig(sync, callback) {
+  if (!callback) {
+    callback = function() {};
+  }
   if (sync) {
     try {
       config = JSON.parse(fs.readFileSync('config.json'));
-      console.log('loaded config', config);
     } catch(e) {
-      console.log('error loading config.json', e);
+      callback(e);
+      return;
     }
+    callback(null);
   } else {
     fs.readFile('config.json', function(err, data) {
       if (err) {
-        console.log('error reading config.json', err);
+        callback('error reading config.json', err);
       } else {
         try {
           config = JSON.parse(data.toString());
-          console.log('reloaded config', config);
         } catch(e) {
-          console.log('error parsing config.json', e);
+          callback(e);
+          return;
         }
+        callback(null);
       }
     });
   }
@@ -30,14 +37,25 @@ function loadConfig(sync) {
 
 function getConfig(domain) {
   if (config && config.domains && config.domains[domain]) {
+    alarm.debug('config' + domain + JSON.stringify(config));
     return config.domains[domain];
   } else {
+    alarm.debug('config not found' + domain + JSON.stringify(config));
     return {};
   }
 }
 
-module.exports.init = function() {
-  setInterval(loadConfig, CONFIG_LOAD_INTERVAL);
-  loadConfig(true);
+module.exports.init = function(callback) {
+  loadConfig(true, function(err) {
+    if (err) {
+      callback(err);
+    } else {
+      timer = setInterval(loadConfig, CONFIG_LOAD_INTERVAL);
+      callback(null);
+    }
+  });
+};
+module.exports.exit = function() {
+  clearInterval(timer);
 };
 module.exports.getConfig = getConfig;

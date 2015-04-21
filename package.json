@@ -11,7 +11,8 @@
     "native-dns": "*",
     "mkdirp": "*",
     "async": "*",
-    "node-snitch": "*"
+    "node-snitch": "*",
+    "indiehosters-applications": "*"
   },
   "main": "snickers.js"
 }

@@ -4,11 +4,12 @@
 //them from there for the rest of the deployed server's lifetime.
 
 var spdy = require('spdy'),
-    Snitch = require('node-snitch');
+    Snitch = require('node-snitch'),
+    alarm = require('./alarm');
 
-function startSpdy(handlerWeb, handlerWs, whitelist) {
+function startSpdy(handlerWeb, handlerWs, whitelist, callback) {
   var snitch = new Snitch.Store('/etc/snitch', 10 * 60 * 1000, function(err) {
-    console.log('snitch error occurred', err);
+    alarm.raise('snitch error occurred', err);
   }, whitelist);
   var server = spdy.createServer({
     key: Snitch.DEFAULT_KEY,
@@ -27,9 +28,20 @@ function startSpdy(handlerWeb, handlerWs, whitelist) {
   //special case for dealing with websockets:
   server.on('upgrade', handlerWs);
 
+  var listening = false;
+  server.on('error', function(err) {
+    if (listening) {
+      alarm.raise(err);
+    } else {
+      snitch.exit();
+      callback(err);
+    }
+  });
+  server.on('listening', function() {
+    listening = true;
+    callback(null);
+  });
   server.listen(443);
-
-  console.log('OK, hit me on https for some domain that points to this server');
 }
 
 module.exports.startSpdy = startSpdy;

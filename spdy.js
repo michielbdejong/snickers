@@ -1,18 +1,17 @@
-var dockerActivator = require('docker-activator'),
+var backends = require('./backends'),
     dispatcher = require('./dispatcher'),
     listener = require('./listener'),
     configReader = require('./config-reader'),
     statics = require('./statics'),
-    stats = require('./stats');
+    stats = require('./stats'),
+    alarm = require('./alarm');
 
 function handlerWebBackend(host, config, req, res) {
-  var localDataPath = '/data/domains/' + host;
-  dockerActivator.ensureStarted(host, localDataPath, function(err, ipaddr) {
+  backends.ensureStarted(host, config, function(err, ipaddr) {
     if (err) {
       res.writeHead(500);
       res.end('Error starting ' + config.application + ' for ' + host + ' - ' + JSON.stringify(err));
     } else {
-      console.log('Proxying ' + host + ' to http://' + ipaddr);
       req.headers['X-Forwarded-Proto'] = 'https';
       dispatcher.proxyTo(req, res, ipaddr, config.port);
     }
@@ -32,6 +31,7 @@ function handlerWeb(req, res) {
   if (typeof host === 'string') {
     if (host === host.toLowerCase()) {
       config = configReader.getConfig(host);
+      alarm.debug('got config', host, config);
       if (config.type === 'backend') {
         handlerWebBackend(host, config, req, res);
        } else if (config.type === 'static') {
@@ -59,13 +59,11 @@ function handlerWeb(req, res) {
 }
 
 function handlerWsBackend(host, config, req, socket, head) {
-  var localDataPath = '/data/domains/' + host;
-  dockerActivator.ensureStarted(host, localDataPath, function(err, ipaddr) {
+  backends.ensureStarted(host, configReader.getConfig(host), function(err, ipaddr) {
     if (err) {
-      console.log('Error starting site, closing socket', host);
+      alarm.raise('Error starting site, closing socket', host);
       socket.close();
     } else {
-      console.log('Proxying ' + host + ' to ws://' + ipaddr);
       req.headers['X-Forwarded-Proto'] = 'https';
       dispatcher.proxyWsTo(req, socket, head, ipaddr, config.port);
     }
@@ -81,7 +79,6 @@ function handlerWs (req, socket, head) {
     if (config.type === 'backend') {
       handlerWsBackend(host, config, req, socket, head);
     } else {
-      console.log('WebSocket to non-configured site, closing socket', host);
       socket.close();
     }
     stats.inc(host);
@@ -95,9 +92,6 @@ function whitelist(servername) {
   return (configReader.getConfig(servername).type !== undefined);
 }
 
-module.exports.start = function() {
-  dockerActivator.init(function() {
-    console.log('done initializing dockerActivator');
-  });
-  listener.startSpdy(handlerWeb, handlerWs, whitelist);
+module.exports.start = function(callback) {
+  listener.startSpdy(handlerWeb, handlerWs, whitelist, callback);
 }

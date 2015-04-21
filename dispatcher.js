@@ -8,7 +8,6 @@ function proxyTo(req, res, ipaddr, attempt) {
   if (!attempt) {
     attempt = 0;
   }
-  console.log('Proxy attempt ' + attempt + ' of ' + PROXY_MAX_TRY + ' (spaced at ' + PROXY_RETRY_TIME + 'ms)', ipaddr);
   proxy.web(req, res, { target: 'http://' + ipaddr }, function(e) {
     if (attempt > PROXY_MAX_TRY) {
       res.writeHead(500);
@@ -25,17 +24,14 @@ function proxyWsTo(req, socket, head, ipaddr, attempt) {
   if (!attempt) {
     attempt = 0;
   }
-  console.log('Proxy ws attempt ' + attempt + ' of ' + PROXY_MAX_TRY + ' (spaced at ' + PROXY_RETRY_TIME + 'ms)', ipaddr);
   proxy.ws(req, socket, head, { target: 'http://' + ipaddr }, function(e) {
     if (attempt > PROXY_MAX_TRY) {
       socket.close();
     } else if (e) {
-      console.log('ws proxy attempt error', e);
+      alarm.raise(e);
       setTimeout(function() {
         proxyWsTo(req, socket, head, ipaddr, attempt + 1);
       }, PROXY_RETRY_TIME);
-    } else {
-      console.log('ws proxy successful');
     }
   });
 }

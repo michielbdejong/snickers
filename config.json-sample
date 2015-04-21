@@ -1,13 +1,7 @@
 {
   "domains": {
-    "example2.com": {
-      "folder": "public/",
-      "otherEmail": "user@gmail.com",
-      "repo": "https://github.com/michielbdejong/website",
-      "type": "static"
-    },
     "test.com": {
-      "application": "known",
+      "application": "lamp",
       "backendEnv": {
         "ADMIN_EMAIL": "user@gmail.com",
         "ADMIN_USER": "freddie",
@@ -15,14 +9,6 @@
       },
       "otherEmail": "user@gmail.com",
       "type": "backend"
-    },
-    "www.example2.com": {
-      "redirectHost": "example2.com",
-      "type": "redirect"
-    },
-    "www.test.com": {
-      "redirectHost": "test.com",
-      "type": "redirect"
     }
   }
 }
