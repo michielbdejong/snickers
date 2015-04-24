@@ -32,8 +32,9 @@ a chance to dump its database to disk before it is stopped and destroyed.
 git clone https://github.com/michielbdejong/snickers-proxy
 cd snickers-proxy
 npm install
-cp config.json config.json-sample
-./createSnakeOilCerts.sh
+cp example/config.json .
+sudo cp -r example/snitch /etc
+sudo mkdir -p /data/domains
 ````
 
 If you are trying this out on localhost, then add a line '127.0.0.1 test.com' into your /etc/hosts. If
@@ -42,7 +43,17 @@ put real certificates under /etc/snitch.
 
 Once all of this is set up, run:
 ````bash
-node snickers
+sudo node snickers
+````
+
+Now run:
+
+````bash
+curl -kI https://test.com/ # you should see a 403 Forbidden response
+sudo cp example/index.html /data/domains/test.com/lamp/www-content/
+curl -kI https://test.com/ # you should see a 200 OK response
+sudo docker ps # a container named 'test.com' should be running
+sudo docker-enter test.com # you can go into the container and run `ls /data/ ; mysqldump --all-databases > /data/dump.sql`
 ````
 
 # Requirements
