@@ -4,17 +4,17 @@ var httpProxy = require('http-proxy'),
 var PROXY_MAX_TRY = 50,
     PROXY_RETRY_TIME = 300;
 
-function proxyTo(req, res, ipaddr, attempt) {
+function proxyTo(req, res, ipaddr, port, attempt) {
   if (!attempt) {
     attempt = 0;
   }
-  proxy.web(req, res, { target: 'http://' + ipaddr }, function(e) {
+  proxy.web(req, res, { target: 'http://' + ipaddr + ':' + port }, function(e) {
     if (attempt > PROXY_MAX_TRY) {
       res.writeHead(500);
       res.end('Could not proxy request: ' + req.headers.host);
     } else {
       setTimeout(function() {
-        proxyTo(req, res, ipaddr, attempt + 1);
+        proxyTo(req, res, ipaddr, port, attempt + 1);
       }, PROXY_RETRY_TIME);
     }
   });

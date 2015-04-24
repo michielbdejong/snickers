@@ -7,13 +7,16 @@ var backends = require('./backends'),
     alarm = require('./alarm');
 
 function handlerWebBackend(host, config, req, res) {
-  backends.ensureStarted(host, config, function(err, ipaddr) {
+  backends.ensureStarted(host, config, function(err, data) {
     if (err) {
       res.writeHead(500);
       res.end('Error starting ' + config.application + ' for ' + host + ' - ' + JSON.stringify(err));
     } else {
       req.headers['X-Forwarded-Proto'] = 'https';
-      dispatcher.proxyTo(req, res, ipaddr, config.port);
+      if (!config.port) {
+        config.port = 80;
+      }
+      dispatcher.proxyTo(req, res, data.ipaddr, config.port);
     }
   });
   
