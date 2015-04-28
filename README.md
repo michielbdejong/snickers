@@ -53,6 +53,7 @@ curl -kI https://test.com/ # you should see a 403 Forbidden response
 sudo cp example/index.html /data/domains/test.com/lamp/www-content/
 curl -kI https://test.com/ # you should see a 200 OK response
 sudo docker ps # a container named 'test.com' should be running
+sudo docker exec -i -t test.com /bin/bash # you can go into the container and run `ls /data/ ; mysqldump --all-databases > /data/dump.sql`
 ````
 
 # Requirements
