@@ -1,0 +1,14 @@
+{
+  "domains": {
+    "test.com": {
+      "application": "lamp",
+      "backendEnv": {
+        "ADMIN_EMAIL": "user@gmail.com",
+        "ADMIN_USER": "freddie",
+        "TITLE": "TestSite"
+      },
+      "otherEmail": "user@gmail.com",
+      "type": "backend"
+    }
+  }
+}
