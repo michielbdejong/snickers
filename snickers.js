@@ -1,17 +1,13 @@
-//components to make into npm modules:
-// - git stuff
-// - jitboot
-// - coyote-config-reader
-// - http-redirector
-// - snitch ('sni transparency can haz')
-// - coyote-stats
-// - coyote-alarms
-// - snickers-applications
-
-var spdy = require('./spdy'),
+var snickersSpdy = require('./snickers-spdy'),
     configReader = require('./config-reader'),
     snickersHttp = require('./snickers-http'),
     stats = require('./stats');
+
+// This method does four things:
+// * Initialize the config reader
+// * Initializes the stats
+// * Start the SPDY service
+// * Start the http service
 
 function init(callback) {
   configReader.init(function(err1) {
@@ -23,7 +19,7 @@ function init(callback) {
           configReader.exit();
           callback(err2);
         } else {
-          spdy.start(function(err3) {
+          snickersSpdy.start(function(err3) {
             if (err3) {
               configReader.exit();
               stats.exit();
