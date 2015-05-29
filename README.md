@@ -57,34 +57,7 @@ sudo docker ps # a container named 'test.com' should be running
 
 # Requirements
 
-Snickers requires Docker 1.3+, nodejs, and the packages it installs when you run `npm install` in the root of this repo. I use screen to
-run `node ./snickers` in a loop (configure the server to restart this screen on startup, in case it reboots).
-
-For instance on a Ubuntu 14.10-x64 (2 CPUs, 2Gb RAM, 40Gb disk, from [Vultr](https://www.vultr.com/pricing/)), run:
-
-````bash
-apt-get update && apt-get upgrade
-apt-get -y install git nodejs npm nodejs-legacy
-
-dpkg-reconfigure -plow unattended-upgrades
-# set unattended upgrades to 'Yes'
-
-# Install Docker:
-curl -sSL https://get.docker.com/ | sh
-````
-
-# Running in production
-
-To make sure a node process keeps running on the server after you log out and restart the server,
-I recommend using a tool like pm2:
-
-````bash
-npm install -g pm2
-sudo su
-pm2 start snickers.js
-pm2 startup
-pm2 list
-````
+Snickers requires Docker 1.3+, nodejs, and the packages it installs when you run `npm install` in the root of this repo. See my [hosting](https://github.com/michielbdejong/hosting) repo for more details on how I use this proxy to host static and dynamic sites. Use at your own risk.
 
 Each time you configure a new domain, update `config.json`, which Snicker will load in once every minute.
 
