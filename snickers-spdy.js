@@ -7,6 +7,7 @@ var backends = require('./backends'),
     alarm = require('./alarm');
 
 function handlerWebBackend(host, config, req, res) {
+  console.log('handlerWebBackend');
   backends.ensureStarted(host, config, function(err, data) {
     if (err) {
       res.writeHead(500);

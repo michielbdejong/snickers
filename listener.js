@@ -14,13 +14,21 @@ function startSpdy(handlerWeb, handlerWs, whitelist, callback) {
   var server = spdy.createServer({
     key: Snitch.DEFAULT_KEY,
     cert: Snitch.DEFAULT_CERT,
-    SNICallback: function(servername) {
-      return snitch.getContext(servername);
+    SNICallback: function(servername, callback) {
+      console.log('SNICallback for '+servername);
+      if (callback) {
+        console.log('got callback');
+        callback(null, snitch.getContext(servername));
+      } else {
+        console.log('no callback');
+        return snitch.getContext(servername);
+      }
     }
   }, function(req, res) {
     if (snitch.handleChallenge(req, res)) {
-      //challenge handled
+      console.log('challenge handled', req.url);
     } else {
+      console.log('challenge not handled', req.url);
       return handlerWeb(req, res);
     }
   });
