@@ -4,6 +4,7 @@ var dockerActivator = require('docker-activator'),
     lastCheck = 0;
 
 module.exports.init = function() {
+  console.log('initializing backends...');
   dockerActivator.init(function(err) {
     console.log('dockerActivator init', err);
   });
