@@ -33,7 +33,7 @@ function startSpdy(handlerWeb, handlerWs, whitelist, callback) {
     if (listening) {
       alarm.raise(err);
     } else {
-      snitch.exit();
+      //snitch.exit();
       callback(err);
     }
   });
