@@ -2,7 +2,7 @@ var httpProxy = require('http-proxy'),
     proxy = httpProxy.createProxyServer();
 
 var PROXY_MAX_TRY = 50,
-    PROXY_RETRY_TIME = 300;
+    PROXY_RETRY_TIME = 1000;
 
 function proxyTo(req, res, ipaddr, port, attempt) {
   if (!attempt) {
