@@ -32,6 +32,10 @@ function handlerWebStatic(host, config, req, res) {
 function handlerWeb(req, res) {
   var host, config;
   host = req.headers.host;
+  if (typeof host !== 'string') {
+    console.log('no host header, trying :authority header', req.headers);
+    host = req.headers[':authority'];
+  }
   if (typeof host === 'string') {
     if (host === host.toLowerCase()) {
       config = configReader.getConfig(host);
@@ -58,7 +62,7 @@ function handlerWeb(req, res) {
     }
   } else {
     res.writeHead(406);
-    res.end('Cannot serve http request without host header');
+    res.end('Cannot serve http request without host header '+ JSON.stringify(req.headers));
   }
 }
 
