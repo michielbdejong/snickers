@@ -1,7 +1,7 @@
 {
   "name": "snickers",
   "repository": "https://github.com/michielbdejong/snickers",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "dependencies": {
     "docker-activator": "0.0.9",
     "spdy": "*",
@@ -11,7 +11,7 @@
     "native-dns": "*",
     "mkdirp": "*",
     "async": "*",
-    "node-snitch": "0.0.3",
+    "node-snitch": "0.0.4",
     "indiehosters-applications": "0.0.1"
   },
   "main": "snickers.js"
