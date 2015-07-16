@@ -1,7 +1,8 @@
 var dockerActivator = require('docker-activator'),
     indiehosters = require('indiehosters-applications'),
     alarm = require('./alarm'),
-    lastCheck = 0;
+    lastCheck = 0,
+    MAX_IDLE_TIME = 7 * 24 * 3600 * 1000;
 
 module.exports.init = function() {
   console.log('initializing backends...');
@@ -18,7 +19,7 @@ module.exports.ensureStarted = function(host, config, callback) {
   if (now - lastCheck > 6000 * 1000) {
     console.log('clean up check');
     lastCheck = now;
-    dockerActivator.maybeStopOneContainer(1000*3600, '', function(err) {
+    dockerActivator.maybeStopOneContainer(MAX_IDLE_TIME, '', function(err) {
       console.log('clean up', err);
     });
   }
