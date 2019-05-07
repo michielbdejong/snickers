@@ -1,5 +1,7 @@
 # Snickers-proxy
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/michielbdejong/snickers.svg)](https://greenkeeper.io/)
+
 This proxy takes its config from `./config.json`, and then listens on ports 443 and 80.
 When a request comes in on http port 80, it is redirected to https port 443.
 It will use certificates from `/etc/snitch/<domain.com>/`. If there is no TLS certificate
